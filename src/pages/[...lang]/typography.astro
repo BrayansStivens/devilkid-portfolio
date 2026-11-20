@@ -1,0 +1,281 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Follow from '../../components/Follow.astro';
+import { langPaths, pic, type Lang } from '../../lib/paths';
+import { marks } from '../../data/work';
+import { t } from '../../i18n/ui';
+import type { Finish } from '../../scripts/chrome/stage';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+
+const START = 16;
+const finishes: (Exclude<Finish, 'onyx'> | 'ink')[] = ['chrome', 'gold', 'candy', 'ink'];
+const tiles = marks.map((m, i) => {
+  const p = pic(`typography/${m.file}`);
+  const no = String(i + 1).padStart(2, '0');
+  return { ...m, no, name: m.client ?? `${s.type.mark} ${no}`, thumb: p.url(480), full: p.url(960), w: p.w, h: p.h };
+});
+const first = tiles[START];
+---
+
+<Base lang={lang} page="typography" title={s.type.title}>
+  <div class="stack bench">
+    <Window heading="h1" title={`${s.type.title} — ${s.type.stage}`} dark bodyClass="caster" class="bench__stage">
+      <Fragment slot="toolbar">
+        <span class="win__toolbar-label" id="finish-label">{s.type.finish}</span>
+        <div class="seg" role="group" aria-labelledby="finish-label" data-finishes>
+          {
+            finishes.map((f) => (
+              <button type="button" data-finish={f} aria-pressed={f === 'chrome' ? 'true' : 'false'}>
+                {s.type.finishes[f]}
+              </button>
+            ))
+          }
+        </div>
+      </Fragment>
+
+      <div class="caster__stage" data-caster data-finish="ink" data-mask={first.full}>
+        <img class="caster__flat" data-flat src={first.full} alt={first.name} width={first.w} height={first.h} />
+        <canvas aria-hidden="true"></canvas>
+        <p class="caster__hint tech">{s.type.drag}</p>
+      </div>
+
+      <Fragment slot="status">
+        <span class="plate">
+          <span>
+            <strong data-mark-name>{first.name}</strong>
+            <span class="plate__no" data-mark-no>N.º {first.no}</span>
+          </span>
+          <a class="gel" data-mark-link href={first.href} target="_blank" rel="noopener noreferrer" hidden={!first.href}>
+            {s.type.visit}
+          </a>
+        </span>
+      </Fragment>
+    </Window>
+
+    <Window title={s.type.title} class="bench__list">
+      <Fragment slot="status">
+        <span>{marks.length} {s.count.marks} — {s.type.personal}</span>
+        <Follow lang={lang} section="typography" />
+      </Fragment>
+      <ul class="marks" data-marks>
+        {
+          tiles.map((m, i) => (
+            <li>
+              <button
+                type="button"
+                class="mark"
+                data-mask={m.full}
+                data-name={m.name}
+                data-no={m.no}
+                data-href={m.href}
+                aria-pressed={i === START ? 'true' : 'false'}
+                aria-label={m.name}
+              >
+                <img src={m.thumb} alt="" width={m.w} height={m.h} loading={i < 12 ? 'eager' : 'lazy'} decoding="async" />
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
+  </div>
+</Base>
+
+<style>
+  .bench {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  :global(.bench__stage) {
+    position: sticky;
+    top: calc(var(--menubar-h) + 16px);
+    z-index: 2;
+  }
+  .caster__stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    max-height: min(62vh, 620px);
+    width: 100%;
+    background:
+      radial-gradient(70% 60% at 50% 45%, #1b1d27 0%, #08080b 70%, #020203 100%);
+    overflow: hidden;
+  }
+  .caster__stage canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .caster__stage :global(canvas.is-grabbing) {
+    cursor: grabbing;
+  }
+  .caster__flat {
+    position: absolute;
+    inset: 12%;
+    width: 76%;
+    height: 76%;
+    object-fit: contain;
+    opacity: 0;
+  }
+  .caster__stage[data-finish='ink'] {
+    background: #fff;
+  }
+  .caster__stage[data-finish='ink'] .caster__flat {
+    opacity: 1;
+  }
+  .caster__stage[data-finish='ink'] canvas,
+  .caster__stage[data-finish='ink'] .caster__hint {
+    visibility: hidden;
+  }
+  .caster__hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    margin: 0;
+    text-align: center;
+    font-size: 8.5px;
+    color: rgba(255, 255, 255, 0.45);
+    pointer-events: none;
+  }
+
+  .plate {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 14px;
+    width: 100%;
+    padding: 8px 0 6px;
+    font-size: 12.5px;
+  }
+  .plate__no {
+    margin-left: 8px;
+    font-size: 11px;
+    color: #3b3b3b;
+  }
+
+  .marks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .marks li {
+    border-right: 1px solid #e3e6ee;
+    border-bottom: 1px solid #e3e6ee;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 14%;
+    border: 0;
+    background: #fff;
+    cursor: pointer;
+  }
+  .mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.25s;
+  }
+  .mark:hover img {
+    transform: scale(1.08);
+  }
+  .mark[aria-pressed='true'] {
+    background: var(--select);
+  }
+  .mark[aria-pressed='true'] img {
+    filter: invert(1);
+  }
+
+  @media (max-width: 1000px) {
+    .bench {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .caster__stage {
+      aspect-ratio: 16 / 10;
+      max-height: 38vh;
+    }
+    :global(.bench__stage) {
+      top: calc(var(--menubar-h) + 6px);
+    }
+    .marks {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+  }
+</style>
+
+<script>
+  import type { ChromeStage, Finish } from '../../scripts/chrome/stage';
+
+  const host = document.querySelector<HTMLElement>('[data-caster]');
+  const list = document.querySelector<HTMLElement>('[data-marks]');
+  if (host && list) {
+    const canvas = host.querySelector('canvas')!;
+    const flat = host.querySelector<HTMLImageElement>('[data-flat]')!;
+    const name = document.querySelector<HTMLElement>('[data-mark-name]')!;
+    const no = document.querySelector<HTMLElement>('[data-mark-no]')!;
+    const link = document.querySelector<HTMLAnchorElement>('[data-mark-link]')!;
+    const finishes = document.querySelector<HTMLElement>('[data-finishes]')!;
+    let stage: ChromeStage | null = null;
+    let finish: Finish | 'ink' = 'chrome';
+    let mask = host.dataset.mask!;
+    // Lighter mesh on phones; the relief reads the same at that size.
+    const grid = window.matchMedia('(max-width: 760px)').matches ? 300 : 420;
+
+    const cast = () =>
+      stage?.setLayers([{ mask, finish: finish === 'ink' ? 'chrome' : finish, grid, roundness: 0.03, depth: 1.7, soften: 3 }]);
+
+    const setFinish = (next: Finish | 'ink') => {
+      finish = next;
+      host.dataset.finish = stage ? next : 'ink';
+      if (stage && next !== 'ink') stage.setFinish(next);
+      finishes.querySelectorAll<HTMLElement>('[data-finish]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.finish === host.dataset.finish)));
+    };
+
+    import('../../scripts/chrome/stage')
+      .then(async ({ ChromeStage }) => {
+        stage = new ChromeStage(canvas, { fit: 0.78 });
+        await cast();
+        setFinish('chrome');
+        stage.start();
+        (window as any).__dk = { stage };
+      })
+      .catch((err) => {
+        console.warn('[devilkid] 3D unavailable, showing flat logotypes.', err);
+        setFinish('ink');
+        finishes.querySelectorAll<HTMLButtonElement>('[data-finish]:not([data-finish="ink"])').forEach((b) => (b.disabled = true));
+      });
+
+    finishes.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-finish]');
+      if (btn) setFinish(btn.dataset.finish as Finish | 'ink');
+    });
+
+    list.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.mark');
+      if (!btn) return;
+      list.querySelector('.mark[aria-pressed="true"]')?.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('aria-pressed', 'true');
+      mask = btn.dataset.mask!;
+      flat.src = mask;
+      flat.alt = btn.dataset.name!;
+      name.textContent = btn.dataset.name!;
+      no.textContent = `N.º ${btn.dataset.no}`;
+      link.hidden = !btn.dataset.href;
+      if (btn.dataset.href) link.href = btn.dataset.href;
+      cast();
+    });
+  }
+</script>

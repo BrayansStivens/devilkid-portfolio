@@ -1,0 +1,292 @@
+---
+// Full-size viewer shared by Fashion and Art. Any element carrying
+// data-view-group / data-title / data-views opens it.
+import type { Lang } from '../lib/paths';
+import { t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+const s = t(Astro.props.lang).viewer;
+---
+
+<dialog class="viewer" data-viewer aria-label={s.zoom}>
+  <header class="viewer__bar">
+    <button class="viewer__close" type="button" data-viewer-close aria-label={s.close}><span aria-hidden="true"></span></button>
+    <p class="viewer__title" data-viewer-title></p>
+    <p class="viewer__count" data-viewer-count data-of={s.of}></p>
+  </header>
+  <div class="viewer__stage" data-viewer-stage>
+    <img data-viewer-img alt="" />
+  </div>
+  <button class="viewer__nav viewer__nav--prev" type="button" data-viewer-prev aria-label={s.prev}><span aria-hidden="true"></span></button>
+  <button class="viewer__nav viewer__nav--next" type="button" data-viewer-next aria-label={s.next}><span aria-hidden="true"></span></button>
+  <footer class="viewer__strip" data-viewer-strip></footer>
+</dialog>
+
+<style is:global>
+  .viewer {
+    width: min(1100px, 100vw - 24px);
+    height: min(900px, 100dvh - 24px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    color: #f2f2f2;
+    background: rgba(24, 24, 27, 0.96);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.18),
+      0 30px 80px rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+  }
+  .viewer[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .viewer::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+  }
+  .viewer__bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+  .viewer__title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 13px;
+    text-align: center;
+  }
+  .viewer__count {
+    margin: 0;
+    justify-self: end;
+    color: #a9a9b2;
+    font-variant-numeric: tabular-nums;
+  }
+  .viewer__close {
+    justify-self: start;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .viewer__close span {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background:
+      radial-gradient(70% 45% at 50% 16%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%),
+      #e2362c;
+    box-shadow: 0 0 0 0.5px #000, inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  }
+  .viewer__stage {
+    position: relative;
+    margin: 0 12px;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+    cursor: zoom-in;
+    overscroll-behavior: contain;
+  }
+  .viewer__stage img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+  }
+  .viewer__stage.is-zoomed {
+    overflow: auto;
+    cursor: zoom-out;
+  }
+  .viewer__stage.is-zoomed img {
+    position: static;
+    width: max(100%, var(--natural, 1440px));
+    height: auto;
+  }
+  .viewer__nav {
+    position: absolute;
+    top: 50%;
+    width: 44px;
+    height: 64px;
+    margin-top: -32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(20, 20, 22, 0.72);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .viewer__nav:hover {
+    background: rgba(40, 90, 200, 0.9);
+  }
+  .viewer__nav--prev {
+    left: 18px;
+  }
+  .viewer__nav--next {
+    right: 18px;
+  }
+  .viewer__nav span {
+    width: 12px;
+    height: 12px;
+    border: solid #fff;
+    border-width: 0 0 3px 3px;
+    transform: translateX(2px) rotate(45deg);
+  }
+  .viewer__nav--next span {
+    transform: translateX(-2px) rotate(-135deg);
+  }
+  .viewer__nav[hidden] {
+    display: none;
+  }
+  .viewer__strip {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    min-height: 12px;
+  }
+  .viewer__strip button {
+    display: grid;
+    justify-items: center;
+    gap: 3px;
+    padding: 3px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: #c9c9d0;
+    font-size: 10.5px;
+    cursor: pointer;
+  }
+  .viewer__strip img {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 4px;
+  }
+  .viewer__strip button[aria-pressed='true'] {
+    color: #fff;
+  }
+  .viewer__strip button[aria-pressed='true'] img {
+    box-shadow: 0 0 0 3px #4a8ff0;
+  }
+  @media (max-width: 760px) {
+    .viewer {
+      width: 100vw;
+      height: 100dvh;
+      border-radius: 0;
+    }
+    .viewer__stage {
+      margin: 0;
+      border-radius: 0;
+    }
+    .viewer__nav {
+      top: auto;
+      bottom: 92px;
+      margin: 0;
+      height: 44px;
+    }
+    .viewer__nav--prev {
+      left: 8px;
+    }
+    .viewer__nav--next {
+      right: 8px;
+    }
+    .viewer__strip img {
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>
+
+<script>
+  type View = { src: string; srcset: string; thumb: string; w: number; label: string };
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-viewer]');
+  if (dialog) {
+    const img = dialog.querySelector<HTMLImageElement>('[data-viewer-img]')!;
+    const title = dialog.querySelector<HTMLElement>('[data-viewer-title]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-viewer-count]')!;
+    const stage = dialog.querySelector<HTMLElement>('[data-viewer-stage]')!;
+    const strip = dialog.querySelector<HTMLElement>('[data-viewer-strip]')!;
+    const prev = dialog.querySelector<HTMLButtonElement>('[data-viewer-prev]')!;
+    const next = dialog.querySelector<HTMLButtonElement>('[data-viewer-next]')!;
+
+    let items: HTMLElement[] = [];
+    let at = 0;
+    let views: View[] = [];
+
+    const showView = (i: number) => {
+      const v = views[i];
+      stage.classList.remove('is-zoomed');
+      stage.style.setProperty('--natural', `${v.w}px`);
+      img.srcset = v.srcset;
+      img.sizes = '(max-width: 760px) 100vw, 1080px';
+      img.src = v.src;
+      img.alt = `${title.textContent} — ${v.label}`;
+      [...strip.children].forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    };
+
+    const showItem = (i: number) => {
+      at = (i + items.length) % items.length;
+      const el = items[at];
+      views = JSON.parse(el.dataset.views!);
+      title.textContent = el.dataset.title ?? '';
+      count.textContent = `${at + 1} ${count.dataset.of} ${items.length}`;
+      strip.replaceChildren(
+        ...(views.length > 1
+          ? views.map((v, k) => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              const t = document.createElement('img');
+              t.src = v.thumb;
+              t.alt = '';
+              t.loading = 'lazy';
+              const l = document.createElement('span');
+              l.textContent = v.label;
+              b.append(t, l);
+              b.addEventListener('click', () => showView(k));
+              return b;
+            })
+          : []),
+      );
+      showView(Math.min(Number(el.dataset.start ?? 0), views.length - 1));
+      prev.hidden = next.hidden = items.length < 2;
+    };
+
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-view-group]');
+      if (!trigger) return;
+      items = [...document.querySelectorAll<HTMLElement>(`[data-view-group="${trigger.dataset.viewGroup}"]`)].filter(
+        (el) => !el.closest('[hidden]'),
+      );
+      showItem(Math.max(0, items.indexOf(trigger)));
+      dialog.showModal();
+    });
+
+    prev.addEventListener('click', () => showItem(at - 1));
+    next.addEventListener('click', () => showItem(at + 1));
+    dialog.querySelector('[data-viewer-close]')!.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    stage.addEventListener('click', () => stage.classList.toggle('is-zoomed'));
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') showItem(at - 1);
+      if (e.key === 'ArrowRight') showItem(at + 1);
+    });
+  }
+</script>

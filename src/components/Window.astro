@@ -1,0 +1,44 @@
+---
+interface Props {
+  title: string;
+  variant?: 'metal' | 'aqua';
+  heading?: 'h1' | 'h2' | 'h3';
+  status?: string;
+  dark?: boolean;
+  id?: string;
+  class?: string;
+  bodyClass?: string;
+  /** Keep the title for screen readers only (his dialogs have a bare title bar). */
+  titleHidden?: boolean;
+}
+
+const { title, variant = 'metal', heading: Heading = 'h2', status, dark = false, id, class: cls, bodyClass, titleHidden = false } = Astro.props;
+const titleId = `${id ?? title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-title`;
+const hasStatus = Boolean(status) || Astro.slots.has('status');
+---
+
+<section class:list={['win', `win--${variant}`, cls]} id={id} aria-labelledby={titleId}>
+  <header class="win__bar">
+    <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+    <Heading class:list={['win__title', { 'sr-only': titleHidden }]} id={titleId}>{title}</Heading>
+    {Astro.slots.has('end') && <span class="win__end"><slot name="end" /></span>}
+  </header>
+  {
+    Astro.slots.has('toolbar') && (
+      <div class="win__toolbar">
+        <slot name="toolbar" />
+      </div>
+    )
+  }
+  <div class:list={['win__body', { 'win__body--dark': dark }, bodyClass]}>
+    <slot />
+  </div>
+  {
+    hasStatus && (
+      <footer class="win__status">
+        <slot name="status">{status}</slot>
+        <span class="win__grip" aria-hidden="true" />
+      </footer>
+    )
+  }
+</section>

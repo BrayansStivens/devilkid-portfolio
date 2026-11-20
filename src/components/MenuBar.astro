@@ -1,0 +1,62 @@
+---
+import { route, type Lang } from '../lib/paths';
+import { sections, site, type SectionId } from '../data/site';
+import { t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  page: 'home' | SectionId;
+}
+const { lang, page } = Astro.props;
+const s = t(lang);
+const other: Lang = lang === 'en' ? 'es' : 'en';
+const slug = page === 'home' ? '' : page;
+---
+
+<header class="menubar">
+  <a class="menubar__logo" href={route(lang)} aria-label={`${site.name} — ${s.nav.home}`}>
+    <span class="devil-gel" aria-hidden="true"></span>
+  </a>
+  <a class="menubar__app" href={route(lang)} aria-current={page === 'home' ? 'page' : undefined}>{site.name}</a>
+  <nav class="menubar__nav" aria-label="Menu">
+    {
+      sections.map((id) => (
+        <a href={route(lang, id)} aria-current={page === id ? 'page' : undefined}>
+          {s.nav[id]}
+        </a>
+      ))
+    }
+  </nav>
+  <div class="menubar__extras">
+    <span class="menubar__clock" title={s.clockLabel}>
+      <span class="sr-only">{s.clockLabel}: </span>
+      <time data-clock data-locale={lang}>MDE</time>
+    </span>
+    <a class="menubar__lang" href={route(other, slug)} hreflang={other} lang={other} aria-label={s.langSwitch}>
+      {s.langSwitchShort}
+    </a>
+  </div>
+</header>
+
+<script>
+  // Menu-bar clock, set to his time zone rather than the visitor's.
+  const el = document.querySelector<HTMLTimeElement>('[data-clock]');
+  if (el) {
+    const locale = el.dataset.locale === 'es' ? 'es-CO' : 'en-US';
+    const day = new Intl.DateTimeFormat(locale, { timeZone: 'America/Bogota', weekday: 'short' });
+    const time = new Intl.DateTimeFormat(locale, { timeZone: 'America/Bogota', hour: 'numeric', minute: '2-digit' });
+    // The zone and weekday drop away on phones, where only the time fits.
+    const zone = document.createElement('span');
+    zone.className = 'menubar__zone';
+    const clock = document.createElement('span');
+    el.replaceChildren(zone, clock);
+    const tick = () => {
+      const now = new Date();
+      el.dateTime = now.toISOString();
+      zone.textContent = `MDE ${day.format(now)} `;
+      clock.textContent = time.format(now);
+    };
+    tick();
+    setInterval(tick, 20_000);
+  }
+</script>

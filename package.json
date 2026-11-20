@@ -1,0 +1,33 @@
+{
+  "name": "devilkid-portfolio",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "media:fetch": "node scripts/fetch-site.mjs",
+    "media:build": "node scripts/build-media.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@fontsource/manufacturing-consent": "^5.3.0",
+    "@fontsource/michroma": "^5.3.0",
+    "@fontsource/unifrakturcook": "^5.3.0",
+    "astro": "^7.4.13",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/node": "^26.6.6",
+    "@types/three": "^0.187.0",
+    "sharp": "^0.35.5",
+    "typescript": "^6.0.3"
+  },
+  "private": true,
+  "packageManager": "pnpm@12.10.1"
+}

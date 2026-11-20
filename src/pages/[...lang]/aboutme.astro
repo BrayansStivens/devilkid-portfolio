@@ -1,0 +1,392 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Social from '../../components/Social.astro';
+import { langPaths, pic, type Lang } from '../../lib/paths';
+import { mailLink, site, waLink } from '../../data/site';
+import { bio, clients, education, experience, languages, software, strengths } from '../../data/about';
+import { t } from '../../i18n/ui';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+const a = s.about;
+const portrait = pic('about/portrait');
+const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm {name}.";
+---
+
+<Base lang={lang} page="aboutme" title={s.nav.aboutme}>
+  <div class="stack about">
+    <Window variant="aqua" heading="h1" title={a.title} class="about__id">
+      <div class="id">
+        <img
+          class="id__photo"
+          src={portrait.url(960)}
+          srcset={portrait.srcset}
+          sizes="(max-width: 760px) 92vw, 320px"
+          alt={`${site.person} — ${site.name}`}
+          width={portrait.w}
+          height={portrait.h}
+          decoding="async"
+        />
+        <div class="id__copy">
+          <p class="id__mark">{site.name}</p>
+          <p class="id__name">{site.person}</p>
+          <p class="id__roles tech">{s.roles.join(' / ')}</p>
+          <p class="id__bio">{bio[lang]}</p>
+          <dl class="specs">
+            <div>
+              <dt>{a.based}</dt>
+              <dd>{site.location}</dd>
+            </div>
+            <div>
+              <dt>{a.experienceYears}</dt>
+              <dd>{a.experienceValue}</dd>
+            </div>
+            <div>
+              <dt>{a.languages}</dt>
+              <dd>{languages.map((l) => l[lang]).join(' · ')}</dd>
+            </div>
+            <div>
+              <dt>{a.education}</dt>
+              <dd>
+                {education.map((e) => (
+                  <span class="specs__line">
+                    {e.title[lang]} — {e.school}, {e.when}
+                  </span>
+                ))}
+              </dd>
+            </div>
+            <div>
+              <dt>{a.strengths}</dt>
+              <dd>{strengths.map((x) => x[lang]).join(' · ')}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </Window>
+
+    <Window title={a.clients} status={`${clients.length} ${s.count.items}`}>
+      <ul class="rows table">
+        {
+          clients.map((c) => (
+            <li>
+              <strong>{c.name}</strong>
+              <span>{c.what[lang]}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
+
+    <div class="about__side">
+      <Window title={a.experience}>
+        <ol class="rows jobs">
+          {
+            experience.map((e) => (
+              <li>
+                <p class="jobs__head">
+                  <strong>{e.org}</strong>
+                  <span>{e.when[lang]}</span>
+                </p>
+                <p class="jobs__what">{e.what[lang]}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </Window>
+
+      <Window title={a.software}>
+        <ul class="rows levels">
+          {
+            software.map((x) => (
+              <li>
+                <span>{x.name}</span>
+                <span class="dots" role="img" aria-label={`${x.level} / 5`}>
+                  {[1, 2, 3, 4, 5].map((n) => <i class:list={{ on: n <= x.level }} />)}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </Window>
+
+      <Social lang={lang} />
+    </div>
+
+    <Window variant="aqua" title={a.contact} id="contact" class="about__mail">
+      <form class="mail" data-compose data-intro={intro} data-subject={a.subject} data-wa={site.whatsapp} data-mail={site.email}>
+        <p class="mail__row">
+          <span class="mail__key">{a.to}:</span>
+          <span class="mail__to">
+            <a href={mailLink(a.subject)}>{site.email}</a>
+            <a href={waLink(s.waHello)} target="_blank" rel="noopener noreferrer">WhatsApp {site.whatsappDisplay}</a>
+          </span>
+        </p>
+        <p class="mail__row">
+          <label class="mail__key" for="mail-name">{a.name}:</label>
+          <input id="mail-name" name="name" type="text" autocomplete="name" />
+        </p>
+        <p class="mail__row mail__row--body">
+          <label class="mail__key" for="mail-body">{a.message}:</label>
+          <textarea id="mail-body" name="message" rows="6" placeholder={a.messagePlaceholder} required></textarea>
+        </p>
+        <p class="mail__actions">
+          <button class="gel" type="submit" name="via" value="mail">{a.sendMail}</button>
+          <button class="gel gel--blue" type="submit" name="via" value="wa">{a.sendWa}</button>
+        </p>
+      </form>
+    </Window>
+  </div>
+</Base>
+
+<style>
+  .about {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  :global(.about__id),
+  :global(.about__mail) {
+    grid-column: 1 / -1;
+  }
+  .about__side {
+    display: grid;
+    gap: 28px;
+    min-width: 0;
+  }
+
+  .id {
+    display: grid;
+    grid-template-columns: minmax(200px, 320px) minmax(0, 1fr);
+    gap: clamp(18px, 3vw, 40px);
+    padding: clamp(16px, 2.6vw, 30px);
+    align-items: start;
+  }
+  .id__photo {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 12%;
+    border-radius: 4px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.55),
+      0 0 0 5px #fff,
+      0 0 0 6px rgba(0, 0, 0, 0.35),
+      0 10px 24px rgba(0, 0, 0, 0.3);
+  }
+  .id__mark {
+    margin: -0.08em 0 0;
+    font: 400 clamp(3.2rem, 7vw, 5.6rem) / 0.95 var(--font-black);
+    color: #0c0c0c;
+  }
+  .id__name {
+    margin: 6px 0 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .id__roles {
+    margin: 4px 0 0;
+    color: #2a5fc9;
+    font-size: 8.5px;
+  }
+  .id__bio {
+    margin: 16px 0 0;
+    max-width: 62ch;
+    font-size: 14.5px;
+    line-height: 1.62;
+    color: #1b1b1b;
+  }
+  .specs {
+    margin: 20px 0 0;
+    max-width: 62ch;
+    font-size: 12.5px;
+    border-top: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .specs > div {
+    display: grid;
+    grid-template-columns: 8.5em 1fr;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  }
+  .specs dt {
+    font-weight: 700;
+    text-align: right;
+  }
+  .specs dd {
+    margin: 0;
+  }
+  .specs__line {
+    display: block;
+  }
+
+  .table li,
+  .levels li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 12px;
+    padding: 5px 12px;
+    font-size: 12.5px;
+  }
+  .table span {
+    color: #48526a;
+  }
+
+  .jobs li {
+    padding: 9px 12px 10px;
+  }
+  .jobs p {
+    margin: 0;
+  }
+  .jobs__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2px 12px;
+    font-size: 13px;
+  }
+  .jobs__head span {
+    font-size: 11px;
+    color: #2a5fc9;
+    font-variant-numeric: tabular-nums;
+  }
+  .jobs__what {
+    margin-top: 3px !important;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .levels li {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+  .dots {
+    display: inline-flex;
+    gap: 5px;
+  }
+  .dots i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #dfe3ea;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+  .dots i.on {
+    background:
+      radial-gradient(70% 45% at 50% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 70%),
+      linear-gradient(180deg, #4c97ee, #1a57c8);
+    box-shadow: 0 0 0 0.5px #173f8a;
+  }
+
+  .mail {
+    display: grid;
+    gap: 10px;
+    padding: clamp(14px, 2.4vw, 24px) clamp(14px, 2.6vw, 30px) clamp(14px, 2.4vw, 22px);
+  }
+  .mail__row {
+    display: grid;
+    grid-template-columns: 8.5em minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+  .mail__row--body {
+    align-items: start;
+  }
+  .mail__key {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: right;
+    color: #222;
+  }
+  .mail__row--body .mail__key {
+    padding-top: 8px;
+  }
+  .mail__to {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    font-size: 13px;
+  }
+  .mail__to a {
+    color: #0b3fae;
+  }
+  .mail input,
+  .mail textarea {
+    width: 100%;
+    padding: 6px 9px;
+    border: 1px solid #7d7d7d;
+    border-top-color: #4f4f4f;
+    border-radius: 2px;
+    background: #fff;
+    color: #111;
+    font: 16px/1.4 var(--font-ui);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.16);
+  }
+  .mail textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .mail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 4px 0 0;
+  }
+
+  @media (max-width: 900px) {
+    .about {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .about__side {
+      gap: 18px;
+    }
+  }
+  @media (max-width: 760px) {
+    .id {
+      grid-template-columns: 1fr;
+    }
+    .id__photo {
+      max-width: 340px;
+      justify-self: center;
+    }
+    .specs > div,
+    .mail__row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+    .specs dt,
+    .mail__key {
+      text-align: left;
+    }
+    .mail__row--body .mail__key {
+      padding-top: 0;
+    }
+    .mail__actions .gel {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+
+<script>
+  // No backend: the form hands the message to WhatsApp or the visitor's mail app.
+  const form = document.querySelector<HTMLFormElement>('[data-compose]');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const via = (e.submitter as HTMLButtonElement | null)?.value ?? 'wa';
+    const name = String(data.get('name') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+    const hello = name ? form.dataset.intro!.replace('{name}', name) : '';
+    const text = [hello, message].filter(Boolean).join('\n\n');
+    const url =
+      via === 'mail'
+        ? `mailto:${form.dataset.mail}?subject=${encodeURIComponent(form.dataset.subject!)}&body=${encodeURIComponent(text)}`
+        : `https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(text)}`;
+    if (via === 'mail') window.location.href = url;
+    else window.open(url, '_blank', 'noopener');
+  });
+</script>

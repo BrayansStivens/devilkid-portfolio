@@ -1,0 +1,627 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Social from '../../components/Social.astro';
+import { asset, langPaths, pic, route, type Lang } from '../../lib/paths';
+import { site, waLink, type SectionId } from '../../data/site';
+import { pieces } from '../../data/fashion';
+import { films, marks, plates } from '../../data/work';
+import { clients } from '../../data/about';
+import { t } from '../../i18n/ui';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+
+const folders: { id: SectionId; count: number; unit: string; stack: string[]; kind: 'cut' | 'print' | 'film' | 'mark' }[] = [
+  {
+    id: 'fashion',
+    count: pieces.length,
+    unit: s.count.pieces,
+    kind: 'cut',
+    stack: ['fashion/jacket-front-73d191.png', 'fashion/162-8c8ef7.png', 'fashion/western-jacket-back-73d191.png'],
+  },
+  { id: 'art', count: plates.length, unit: s.count.plates, kind: 'print', stack: ['art/7-225ec6.png', 'art/5-170588.png', 'art/1-999b6e.png'] },
+  { id: 'visuals', count: films.length, unit: s.count.films, kind: 'film', stack: ['yt/vI2O_K26R00', 'yt/wSNZ3WHra54', 'yt/wwR4XaDXatw'] },
+  {
+    id: 'typography',
+    count: marks.length,
+    unit: s.count.marks,
+    kind: 'mark',
+    stack: ['typography/6-1c3254.png', 'typography/3-8b7f94.png', 'typography/23-bf841e.png'],
+  },
+];
+const total = folders.reduce((n, f) => n + f.count, 0);
+const reel = pic('reel/poster');
+---
+
+<Base lang={lang} page="home">
+  <section class="hero">
+    <div class="cover" aria-hidden="true" data-cover data-vimeo={site.reel.vimeoId} data-title={s.home.reelTitle}>
+      <img src={reel.src} srcset={reel.srcset} sizes="100vw" alt="" width={reel.w} height={reel.h} fetchpriority="high" decoding="async" />
+    </div>
+    <button class="cover__toggle" type="button" data-cover-toggle data-pause={s.hero.pause} data-play={s.hero.play} aria-label={s.hero.pause} aria-pressed="false" hidden>
+      <span aria-hidden="true"></span>
+    </button>
+    <h1 class="sr-only">{site.name} — {s.roles.join(', ')}</h1>
+    <div class="lockup" aria-hidden="true">
+      <span class="word word--l chrome">
+        Devil<i class="glint" style="--g:34px;top:4%;left:8%;--d:.2s"></i>
+      </span>
+      <div
+        class="head"
+        data-hero
+        data-logo={asset('brand/logo-mask.png')}
+        data-body={asset('brand/logo-silhouette.png')}
+        title={s.hero.spin}
+      >
+        <span class="devil head__flat"></span>
+        <canvas></canvas>
+      </div>
+      <span class="word word--r chrome">
+        Kid<i class="glint" style="--g:26px;top:10%;right:2%;--d:1.4s"></i>
+      </span>
+    </div>
+
+    <p class="roles tech">
+      {s.roles.map((r, i) => <span>{i > 0 && <b aria-hidden="true">/</b>}{r}</span>)}
+    </p>
+
+    <Window variant="aqua" title={s.hero.dialogTitle} titleHidden class="hello">
+      <div class="note">
+        <span class="devil-gel note__icon" aria-hidden="true"></span>
+        <div class="note__copy">
+          <p class="note__title">{s.hero.dialogTitle}</p>
+          <p class="note__text">{s.hero.dialogText}</p>
+          <p class="note__actions">
+            <a class="gel" href={waLink(s.waHello)} target="_blank" rel="noopener noreferrer">{s.hero.whatsapp}</a>
+            <a class="gel gel--blue" href={route(lang, 'fashion')}>{s.hero.enter}</a>
+          </p>
+        </div>
+      </div>
+    </Window>
+  </section>
+
+  <div class="lcd" role="group" aria-label={s.home.clients}>
+    <span class="lcd__tag tech">{s.home.clients}</span>
+    <div class="lcd__window">
+      <div class="lcd__track">
+        <ul>
+          {clients.map((c) => <li>{c.name}</li>)}
+        </ul>
+        <ul aria-hidden="true">
+          {clients.map((c) => <li>{c.name}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="stack home">
+    <Window title={s.home.volume} status={s.home.volumeStatus(total)}>
+      <ul class="folders">
+        {
+          folders.map((f) => (
+            <li>
+              <a class:list={['folder', `folder--${f.kind}`]} href={route(lang, f.id)}>
+                <span class="folder__stack" aria-hidden="true">
+                  {f.stack.map((key) => {
+                    const p = pic(key);
+                    return <img src={p.url(480)} alt="" width={p.w} height={p.h} loading="lazy" decoding="async" />;
+                  })}
+                </span>
+                <span class="folder__name">{s.nav[f.id]}</span>
+                <span class="folder__meta">
+                  {f.count} {f.unit}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
+
+    <Social lang={lang} />
+  </div>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: calc(100svh - var(--menubar-h) - var(--dock-h));
+    display: grid;
+    grid-template-rows: 1fr auto auto;
+    justify-items: center;
+    align-items: center;
+    gap: clamp(10px, 2.4vh, 22px);
+    padding: 10px var(--gutter) clamp(20px, 5vh, 46px);
+    overflow: clip;
+  }
+
+  /* Cover footage: plays muted behind the lockup, like the cover of his old site. */
+  .cover {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    container-type: size;
+    background: #050506;
+    -webkit-mask: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+    mask: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+  }
+  .cover img,
+  .cover :global(iframe) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100cqw, 100cqh * 16 / 9);
+    height: max(100cqh, 100cqw * 9 / 16);
+    max-width: none;
+    transform: translate(-50%, -50%);
+    border: 0;
+    filter: brightness(0.92) contrast(1.08);
+  }
+  .cover img {
+    object-fit: cover;
+  }
+  .cover :global(iframe) {
+    opacity: 0;
+    transition: opacity 1.2s;
+    pointer-events: none;
+  }
+  .cover:global(.is-playing) :global(iframe) {
+    opacity: 1;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 46% at 50% 36%, rgba(4, 4, 6, 0.26) 0%, rgba(4, 4, 6, 0.5) 100%),
+      linear-gradient(180deg, rgba(4, 4, 6, 0.42) 0%, rgba(4, 4, 6, 0.12) 30%, rgba(4, 4, 6, 0.6) 100%);
+  }
+  .cover__toggle {
+    position: absolute;
+    top: 12px;
+    right: var(--gutter);
+    z-index: 4;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, #d9d9d9 48%, #c6c6c6 52%, #efefef 100%);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 2px 5px rgba(0, 0, 0, 0.5);
+    opacity: 0.75;
+  }
+  .cover__toggle:hover,
+  .cover__toggle:focus-visible {
+    opacity: 1;
+  }
+  .cover__toggle span {
+    width: 9px;
+    height: 10px;
+    border-inline: 3px solid #1a1a1a;
+  }
+  .cover__toggle[aria-pressed='true'] span {
+    width: 0;
+    height: 0;
+    margin-left: 3px;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #1a1a1a;
+  }
+
+  .lockup {
+    position: relative;
+    z-index: 1;
+    --head: clamp(170px, 38vmin, 400px);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+  }
+  .word {
+    position: relative;
+    font: 400 clamp(4.5rem, 16vw, 16.5rem) / 0.86 var(--font-black);
+    padding-block: 0.08em;
+    user-select: none;
+  }
+  .word--l {
+    justify-self: end;
+    margin-right: -0.04em;
+  }
+  .word--r {
+    justify-self: start;
+    margin-left: -0.02em;
+  }
+  .head {
+    position: relative;
+    z-index: 2;
+    width: var(--head);
+    aspect-ratio: 1;
+  }
+  .head canvas {
+    position: absolute;
+    inset: -38%;
+    width: 176%;
+    height: 176%;
+    max-width: none;
+    touch-action: pan-y;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .head :global(canvas.is-grabbing) {
+    cursor: grabbing;
+  }
+  .head__flat {
+    position: absolute;
+    inset: 12% 2%;
+    width: 96%;
+    background: var(--chrome-text);
+    filter: drop-shadow(0 3px 0 #000);
+    transition: opacity 0.5s;
+  }
+  .head:global(.is-live) canvas {
+    opacity: 1;
+  }
+  .head:global(.is-live) .head__flat {
+    opacity: 0;
+  }
+
+  .roles {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 0;
+    color: #e6e8ef;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    font-size: clamp(8.5px, 1.05vw, 11.5px);
+    text-align: center;
+  }
+  .roles b {
+    margin: 0 1.1em;
+    color: var(--aqua);
+    font-weight: 400;
+  }
+
+  :global(.hello) {
+    width: min(470px, 100%);
+    z-index: 3;
+  }
+  .note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    padding: 16px 20px 16px 18px;
+  }
+  .note__icon {
+    width: 64px;
+    margin-top: 2px;
+  }
+  .note__title {
+    margin: 0 0 4px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .note__text {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: #1d1d1d;
+  }
+  .note__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 12px 0 0;
+  }
+  .note__actions .gel {
+    flex: 1 1 130px;
+  }
+
+  /* Client ticker, styled as the LCD of an early-2000s player. */
+  .lcd {
+    width: min(1180px, 100% - var(--gutter) * 2);
+    margin: 6px auto 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px 6px 14px;
+    border-radius: 999px;
+    color: #1c2416;
+    background: linear-gradient(180deg, #c3cbb0 0%, #dfe6cd 55%, #edf2de 100%);
+    box-shadow:
+      0 0 0 1px #000,
+      0 0 0 3px #8e8e8e,
+      0 0 0 4px #2a2a2a,
+      inset 0 3px 6px rgba(0, 0, 0, 0.45);
+  }
+  .lcd__tag {
+    font-size: 9px;
+    opacity: 0.75;
+  }
+  .lcd__window {
+    overflow: hidden;
+    -webkit-mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+  .lcd__track {
+    display: flex;
+    width: max-content;
+    animation: ticker 70s linear infinite;
+  }
+  .lcd:hover .lcd__track,
+  .lcd:focus-within .lcd__track {
+    animation-play-state: paused;
+  }
+  .lcd ul {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font: 400 11px/1.8 var(--font-tech);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .lcd li::after {
+    content: '✦';
+    margin: 0 1.4em;
+    font-size: 0.8em;
+    opacity: 0.6;
+  }
+  @keyframes ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .home {
+    grid-template-columns: minmax(0, 1.9fr) minmax(280px, 1fr);
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .home {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Finder-style volume: one stack of work per folder. */
+  .folders {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    padding: clamp(18px, 3vw, 34px) clamp(8px, 2vw, 24px) clamp(14px, 2vw, 24px);
+    list-style: none;
+  }
+  .folder {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 8px 6px 12px;
+    text-decoration: none;
+    color: #111;
+    border-radius: 8px;
+  }
+  .folder__stack {
+    position: relative;
+    display: block;
+    width: min(100%, 230px);
+    aspect-ratio: 1;
+    margin-bottom: 10px;
+  }
+  .folder__stack img {
+    position: absolute;
+    inset: 9%;
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
+    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.1);
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
+  }
+  .folder--print .folder__stack img,
+  .folder--film .folder__stack img {
+    object-fit: cover;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+  }
+  .folder--print .folder__stack img {
+    inset: 6% 17%;
+    width: 66%;
+    height: 88%;
+    background: #fff;
+  }
+  .folder--film .folder__stack img {
+    inset: 27% 4%;
+    width: 92%;
+    height: 52%;
+  }
+  .folder--mark .folder__stack img {
+    filter: none;
+  }
+  .folder__stack img:nth-child(1) {
+    transform: translate(-13%, 2%) rotate(-9deg);
+  }
+  .folder__stack img:nth-child(2) {
+    transform: translate(13%, -1%) rotate(8deg);
+  }
+  .folder__stack img:nth-child(3) {
+    transform: translateY(5%);
+  }
+  .folder--mark .folder__stack img:nth-child(1) {
+    transform: translate(-4%, -30%) rotate(-4deg) scale(0.78);
+  }
+  .folder--mark .folder__stack img:nth-child(2) {
+    transform: translate(3%, 31%) rotate(3deg) scale(0.74);
+  }
+  .folder--mark .folder__stack img:nth-child(3) {
+    transform: scale(0.8);
+  }
+  .folder:hover .folder__stack img:nth-child(1) {
+    transform: translate(-22%, -2%) rotate(-14deg);
+  }
+  .folder:hover .folder__stack img:nth-child(2) {
+    transform: translate(22%, -4%) rotate(13deg);
+  }
+  .folder:hover .folder__stack img:nth-child(3) {
+    transform: translateY(1%) scale(1.04);
+  }
+  .folder--mark:hover .folder__stack img:nth-child(1) {
+    transform: translate(-6%, -36%) rotate(-6deg) scale(0.82);
+  }
+  .folder--mark:hover .folder__stack img:nth-child(2) {
+    transform: translate(5%, 37%) rotate(5deg) scale(0.78);
+  }
+  .folder--mark:hover .folder__stack img:nth-child(3) {
+    transform: scale(0.86);
+  }
+  .folder__name {
+    padding: 1px 10px 2px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .folder:hover .folder__name,
+  .folder:focus-visible .folder__name {
+    background: var(--select);
+    color: #fff;
+  }
+  .folder__meta {
+    font-size: 11px;
+    color: #2f6bd8;
+  }
+
+  @media (max-width: 760px) {
+    .lockup {
+      --head: min(64vw, 40vh);
+      grid-template-columns: auto auto;
+      grid-template-areas: 'head head' 'l r';
+      justify-content: center;
+      column-gap: 0.18em;
+      font-size: clamp(4.2rem, 24vw, 8rem);
+    }
+    .head {
+      grid-area: head;
+      justify-self: center;
+    }
+    .word {
+      font-size: 1em;
+      margin: -0.06em 0 0;
+    }
+    .word--l {
+      grid-area: l;
+    }
+    .word--r {
+      grid-area: r;
+    }
+    .roles {
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: center;
+      gap: 6px 2.2em;
+      font-size: 8.5px;
+    }
+    .roles span:nth-child(odd) {
+      text-align: right;
+    }
+    .roles span:nth-child(even) {
+      text-align: left;
+    }
+    .roles b {
+      display: none;
+    }
+    .note {
+      padding: 14px;
+      gap: 12px;
+    }
+    .note__icon {
+      width: 46px;
+    }
+    .note__text {
+      font-size: 12.5px;
+    }
+    .folders {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .lcd {
+      border-radius: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lcd__track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+    }
+    .lcd ul {
+      flex-wrap: wrap;
+    }
+    .lcd ul[aria-hidden] {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Hero: his mark, inflated to chrome over a black-glass body.
+  const host = document.querySelector<HTMLElement>('[data-hero]');
+  const canvas = host?.querySelector('canvas');
+  if (host && canvas) {
+    import('../../scripts/chrome/stage')
+      .then(async ({ ChromeStage }) => {
+        const stage = new ChromeStage(canvas, { fit: 0.6, followWindow: true });
+        await stage.setLayers([
+          { mask: host.dataset.body!, finish: 'onyx', grid: 170, roundness: 0.2, depth: 0.42, soften: 4, glints: false },
+          { mask: host.dataset.logo!, finish: 'chrome', grid: 340, roundness: 0.036, depth: 1.8, soften: 4, lift: 0.05 },
+        ]);
+        host.classList.add('is-live');
+        stage.start();
+        (window as any).__dk = { stage };
+      })
+      .catch((err) => console.warn('[devilkid] 3D unavailable, showing the flat mark.', err));
+  }
+
+  // Cover footage. The still frame paints first; the player is added once the
+  // page has settled, and never for visitors who asked for less motion or data.
+  const cover = document.querySelector<HTMLElement>('[data-cover]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-cover-toggle]');
+  const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+  if (cover && toggle && !calm && !saveData) {
+    const ORIGIN = 'https://player.vimeo.com';
+    const mount = () => {
+      const frame = document.createElement('iframe');
+      const params = 'background=1&autoplay=1&muted=1&loop=1&playsinline=1&controls=0&title=0&byline=0&portrait=0&dnt=1';
+      frame.src = `${ORIGIN}/video/${cover.dataset.vimeo}?${params}`;
+      frame.allow = 'autoplay; fullscreen; picture-in-picture';
+      frame.title = cover.dataset.title ?? '';
+      frame.tabIndex = -1;
+      frame.addEventListener('load', () => {
+        // Give the player a moment to buffer so the still does not cut to black.
+        window.setTimeout(() => cover.classList.add('is-playing'), 1400);
+        toggle.hidden = false;
+      });
+      cover.append(frame);
+
+      toggle.addEventListener('click', () => {
+        const paused = toggle.getAttribute('aria-pressed') !== 'true';
+        frame.contentWindow?.postMessage(JSON.stringify({ method: paused ? 'pause' : 'play' }), ORIGIN);
+        toggle.setAttribute('aria-pressed', String(paused));
+        toggle.setAttribute('aria-label', paused ? toggle.dataset.play! : toggle.dataset.pause!);
+      });
+    };
+    if (document.readyState === 'complete') window.setTimeout(mount, 300);
+    else window.addEventListener('load', () => window.setTimeout(mount, 300), { once: true });
+  }
+</script>

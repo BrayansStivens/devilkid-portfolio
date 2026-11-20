@@ -1,0 +1,337 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Viewer from '../../components/Viewer.astro';
+import Follow from '../../components/Follow.astro';
+import { langPaths, pic, type Lang } from '../../lib/paths';
+import { pieces, type Category } from '../../data/fashion';
+import { t } from '../../i18n/ui';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+
+const filters: ('all' | Category)[] = ['all', 'outerwear', 'tops', 'footwear', 'more'];
+const SIZES = '(max-width: 760px) 46vw, (max-width: 1180px) 24vw, 230px';
+
+const cards = pieces.map((piece, i) => {
+  const views = piece.views.map((v) => {
+    const p = pic(`fashion/${v.file}`);
+    return { src: p.src, srcset: p.srcset, thumb: p.url(480), w: Math.min(p.w, 1600), label: v.label[lang], swatch: v.swatch };
+  });
+  const bits = [`DK-${String(i + 1).padStart(3, '0')}`];
+  if (piece.client) bits.push(`${s.fashion.for} ${piece.client}`);
+  if (piece.kind === 'colorways') bits.push(`${views.length} ${s.fashion.colorways}`);
+  if (piece.kind === 'series') bits.push(`${views.length} ${s.fashion.designs}`);
+  return { piece, views, meta: bits.join(' · ') };
+});
+---
+
+<Base lang={lang} page="fashion" title={s.fashion.title}>
+  <div class="stack">
+    <Window heading="h1" title={s.fashion.title}>
+      <Fragment slot="toolbar">
+        <div class="seg" role="group" aria-label={s.fashion.title} data-filters>
+          {
+            filters.map((f) => (
+              <button type="button" data-filter={f} aria-pressed={f === 'all' ? 'true' : 'false'}>
+                {s.fashion.filters[f]}
+              </button>
+            ))
+          }
+        </div>
+      </Fragment>
+
+      <ul class="grid" data-grid>
+        {
+          cards.map(({ piece, views, meta }, i) => (
+            <li data-cat={piece.category} data-i={i}>
+              <div class:list={['piece', `piece--${piece.kind}`]}>
+                <button
+                  type="button"
+                  class="piece__open"
+                  data-view-group="fashion"
+                  data-title={piece.title}
+                  data-views={JSON.stringify(views)}
+                  data-start="0"
+                >
+                  <span class="piece__card">
+                    <img
+                      class="piece__face"
+                      src={views[0].thumb}
+                      srcset={views[0].srcset}
+                      sizes={SIZES}
+                      alt={`${piece.title} — ${views[0].label}`}
+                      width="480"
+                      height="480"
+                      loading={i < 10 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                    {piece.kind === 'sides' && (
+                      <img
+                        class="piece__face piece__face--back"
+                        src={views[1].thumb}
+                        srcset={views[1].srcset}
+                        sizes={SIZES}
+                        alt=""
+                        width="480"
+                        height="480"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                  </span>
+                </button>
+                {piece.kind === 'sides' && (
+                  <button type="button" class="piece__flip" data-flip aria-pressed="false" aria-label={`${s.fashion.flip}: ${piece.title}`}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M4 12a8 8 0 0 1 13.7-5.6L20 9M20 4v5h-5M20 12a8 8 0 0 1-13.7 5.6L4 15M4 20v-5h5"
+                      />
+                    </svg>
+                  </button>
+                )}
+                <h2 class="piece__name">{piece.title}</h2>
+                <p class="piece__meta">{meta}</p>
+                {piece.kind === 'colorways' && (
+                  <div class="swatches" role="group" aria-label={s.fashion.colorways}>
+                    {views.map((v, k) => (
+                      <button
+                        type="button"
+                        class="swatch"
+                        style={`--c:${v.swatch}`}
+                        data-swatch={k}
+                        aria-pressed={k === 0 ? 'true' : 'false'}
+                        aria-label={v.label}
+                        title={v.label}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+
+      <Fragment slot="status">
+        <span data-count data-unit={s.count.pieces}>{pieces.length} {s.count.pieces}</span>
+        <Follow lang={lang} section="fashion" />
+      </Fragment>
+    </Window>
+  </div>
+  <Viewer lang={lang} />
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px 2px;
+    margin: 0;
+    padding: 20px 12px 26px;
+    list-style: none;
+  }
+  .piece {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    padding: 4px 8px 6px;
+    text-align: center;
+  }
+  .piece__open {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    cursor: zoom-in;
+    perspective: 900px;
+  }
+  .piece__card {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    transition: transform 0.75s cubic-bezier(0.25, 0.9, 0.3, 1);
+  }
+  .piece__face {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #fff;
+    backface-visibility: hidden;
+  }
+  .piece__face--back {
+    transform: rotateY(180deg);
+  }
+  .piece:global(.is-flipped) .piece__card {
+    transform: rotateY(180deg);
+  }
+  .piece:not(.piece--sides) .piece__open:hover .piece__card {
+    transform: scale(1.045);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .piece--sides .piece__open:hover .piece__card {
+      transform: rotateY(180deg);
+    }
+    .piece--sides:global(.is-flipped) .piece__open:hover .piece__card {
+      transform: rotateY(0deg);
+    }
+  }
+
+  .piece__flip {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    padding: 6px;
+    border: 0;
+    border-radius: 50%;
+    color: #1d1d1d;
+    cursor: pointer;
+    background: linear-gradient(180deg, #ffffff 0%, #d9d9d9 48%, #c6c6c6 52%, #efefef 100%);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 1px 3px rgba(0, 0, 0, 0.35);
+    opacity: 0.85;
+  }
+  .piece__flip:hover,
+  .piece__flip[aria-pressed='true'] {
+    opacity: 1;
+    color: #0a3fa3;
+  }
+
+  .piece__name {
+    margin: 6px 0 0;
+    padding: 1px 9px 2px;
+    border-radius: 999px;
+    font: 700 12.5px/1.35 var(--font-ui);
+  }
+  .piece__open:hover ~ .piece__name,
+  .piece__open:focus-visible ~ .piece__name {
+    background: var(--select);
+    color: #fff;
+  }
+  .piece__meta {
+    margin: 1px 0 0;
+    font-size: 10.5px;
+    color: #5d6b85;
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 7px;
+  }
+  .swatch {
+    width: 17px;
+    height: 17px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background:
+      radial-gradient(70% 45% at 50% 18%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+      var(--c);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.55),
+      inset 0 -2px 3px rgba(255, 255, 255, 0.25);
+  }
+  .swatch[aria-pressed='true'] {
+    box-shadow:
+      0 0 0 1px #fff,
+      0 0 0 3px #2f6fe0;
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 12px 4px 18px;
+    }
+    .piece {
+      padding-inline: 4px;
+    }
+    .piece__flip {
+      width: 34px;
+      height: 34px;
+      top: 4px;
+      right: 6px;
+    }
+    .swatch {
+      width: 24px;
+      height: 24px;
+    }
+  }
+</style>
+
+<script>
+  const grid = document.querySelector<HTMLElement>('[data-grid]');
+  if (grid) {
+    const cells = [...grid.querySelectorAll<HTMLElement>('li')];
+    const count = document.querySelector<HTMLElement>('[data-count]');
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Front / back.
+    grid.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const flip = target.closest<HTMLButtonElement>('[data-flip]');
+      if (flip) {
+        const piece = flip.closest<HTMLElement>('.piece')!;
+        const on = piece.classList.toggle('is-flipped');
+        flip.setAttribute('aria-pressed', String(on));
+        piece.querySelector<HTMLElement>('.piece__open')!.dataset.start = on ? '1' : '0';
+        return;
+      }
+      // Colorways.
+      const swatch = target.closest<HTMLButtonElement>('[data-swatch]');
+      if (swatch) {
+        const piece = swatch.closest<HTMLElement>('.piece')!;
+        const open = piece.querySelector<HTMLElement>('.piece__open')!;
+        const k = Number(swatch.dataset.swatch);
+        const view = JSON.parse(open.dataset.views!)[k];
+        const img = piece.querySelector<HTMLImageElement>('.piece__face')!;
+        img.srcset = view.srcset;
+        img.src = view.thumb;
+        img.alt = `${open.dataset.title} — ${view.label}`;
+        open.dataset.start = String(k);
+        piece.querySelectorAll('[data-swatch]').forEach((b) => b.setAttribute('aria-pressed', String(b === swatch)));
+      }
+    });
+
+    // Category filter, animated where the browser can morph the grid.
+    const filters = document.querySelector<HTMLElement>('[data-filters]');
+    filters?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+      if (!btn) return;
+      const cat = btn.dataset.filter!;
+      const apply = () => {
+        let shown = 0;
+        for (const cell of cells) {
+          const hide = cat !== 'all' && cell.dataset.cat !== cat;
+          cell.hidden = hide;
+          if (!hide) shown++;
+        }
+        filters.querySelectorAll('[data-filter]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+        if (count) count.textContent = `${shown} ${count.dataset.unit}`;
+      };
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+      if (!doc.startViewTransition || calm.matches) return apply();
+      for (const cell of cells) cell.style.viewTransitionName = `piece-${cell.dataset.i}`;
+      doc.startViewTransition(apply).finished.finally(() => {
+        for (const cell of cells) cell.style.viewTransitionName = '';
+      });
+    });
+  }
+</script>

@@ -1,0 +1,136 @@
+---
+// His profiles as a 2002-style buddy list. Used on Home and About.
+import Window from './Window.astro';
+import { asset, type Lang } from '../lib/paths';
+import { site } from '../data/site';
+import { t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+const s = t(Astro.props.lang).social;
+---
+
+<Window title={s.title} class="online">
+  <Fragment slot="toolbar">
+    <span class="me">
+      <span class="me__orb" aria-hidden="true"></span>
+      <strong>{site.name}</strong>
+      <span class="me__status">{s.available}</span>
+    </span>
+    <img class="me__pic" src={asset('ui/dock-about.webp')} alt="" width="192" height="192" loading="lazy" decoding="async" />
+  </Fragment>
+  <ul class="rows buddies">
+    {
+      site.socials.map((x) => (
+        <li>
+          <a href={x.href} target="_blank" rel="me noopener noreferrer">
+            <span class="buddies__tile" aria-hidden="true">
+              {x.mark}
+            </span>
+            <span class="buddies__net">{x.label}</span>
+            <span class="buddies__handle">{x.handle}</span>
+            <span class="buddies__go" aria-hidden="true" />
+            <span class="sr-only">({s.newTab})</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Window>
+
+<style>
+  .me {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 7px;
+    font-size: 12.5px;
+    color: #1c1c1c;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .me__orb {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background:
+      radial-gradient(70% 45% at 50% 16%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%),
+      #3db52c;
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.6);
+  }
+  .me__status {
+    flex-basis: 100%;
+    padding-left: 18px;
+    font-size: 11px;
+    color: #3a3a3a;
+  }
+  .me__pic {
+    width: 38px;
+    height: 38px;
+    border-radius: 5px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 1px 0 1px rgba(255, 255, 255, 0.6);
+  }
+  .buddies a {
+    display: grid;
+    grid-template-columns: 30px minmax(0, auto) minmax(0, 1fr) 8px;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px 7px 10px;
+    color: #111;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .buddies__tile {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    color: #fff;
+    font: 400 8.5px/1 var(--font-tech);
+    background:
+      radial-gradient(130% 70% at 50% -14%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.12) 68%, rgba(255, 255, 255, 0) 70%),
+      linear-gradient(180deg, #5d606b, #1e1f25);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  }
+  .buddies__net {
+    font-weight: 700;
+  }
+  .buddies__handle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    font-size: 12px;
+    color: #4a5670;
+  }
+  .buddies__go {
+    width: 7px;
+    height: 7px;
+    border: solid #7b8496;
+    border-width: 2px 2px 0 0;
+    transform: rotate(45deg);
+  }
+  .buddies a:hover,
+  .buddies a:focus-visible {
+    background: var(--select);
+    color: #fff;
+  }
+  .buddies a:hover .buddies__handle,
+  .buddies a:focus-visible .buddies__handle {
+    color: #dce9ff;
+  }
+  .buddies a:hover .buddies__go,
+  .buddies a:focus-visible .buddies__go {
+    border-color: #fff;
+  }
+  @media (max-width: 760px) {
+    .buddies a {
+      padding-block: 10px;
+      font-size: 14.5px;
+    }
+  }
+</style>

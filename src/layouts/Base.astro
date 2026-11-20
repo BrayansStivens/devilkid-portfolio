@@ -1,0 +1,93 @@
+---
+import '@fontsource/michroma/latin-400.css';
+import '@fontsource/manufacturing-consent/latin-400.css';
+import '../styles/global.css';
+import MenuBar from '../components/MenuBar.astro';
+import Dock from '../components/Dock.astro';
+import { asset, route, type Lang } from '../lib/paths';
+import { site, type SectionId } from '../data/site';
+import { t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  page: 'home' | SectionId;
+  title?: string;
+  description?: string;
+}
+
+const { lang, page, title, description } = Astro.props;
+const s = t(lang);
+const slug = page === 'home' ? '' : page;
+const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${s.roles.join(' | ')}`;
+const desc = description ?? s.metaDescription;
+const canonical = new URL(route(lang, slug), Astro.site).href;
+// Review builds (GitHub Pages) stay out of search results so they never compete
+// with his real domain.
+const noindex = Boolean(process.env.SITE_NOINDEX);
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.person,
+  alternateName: site.name,
+  url: new URL(route('en'), Astro.site).href,
+  image: new URL(asset('og.jpg'), Astro.site).href,
+  jobTitle: t('en').roles.join(', '),
+  address: { '@type': 'PostalAddress', addressLocality: 'Bello', addressRegion: 'Antioquia', addressCountry: 'CO' },
+  sameAs: site.socials.map((x) => x.href),
+};
+const vars = [
+  `--tex-monogram:url(${asset('ui/monogram.png')})`,
+  `--tex-brushed:url(${asset('ui/brushed.webp')})`,
+  `--mask-logo:url(${asset('brand/logo-mask.png')})`,
+  `--mask-silhouette:url(${asset('brand/logo-silhouette.png')})`,
+].join(';');
+---
+
+<!doctype html>
+<html lang={lang} style={vars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="theme-color" content="#060608" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={new URL(route('en', slug), Astro.site).href} />
+    <link rel="alternate" hreflang="es" href={new URL(route('es', slug), Astro.site).href} />
+    <link rel="icon" type="image/png" sizes="32x32" href={asset('favicon-32.png')} />
+    <link rel="apple-touch-icon" href={asset('apple-touch-icon.png')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(asset('og.jpg'), Astro.site).href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
+    <slot name="head" />
+  </head>
+  <body data-page={page}>
+    <a class="skip" href="#main">{s.skip}</a>
+    <div class="desk" aria-hidden="true"></div>
+    <MenuBar lang={lang} page={page} />
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="foot">
+      <span>&copy;{site.name}. {s.footer.rights}</span>
+      <ul>
+        {
+          site.socials.map((x) => (
+            <li>
+              <a href={x.href} target="_blank" rel="me noopener noreferrer">
+                {x.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </footer>
+    <Dock lang={lang} page={page} />
+  </body>
+</html>

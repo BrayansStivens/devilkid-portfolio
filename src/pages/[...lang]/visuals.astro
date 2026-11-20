@@ -1,0 +1,304 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Follow from '../../components/Follow.astro';
+import { langPaths, pic, type Lang } from '../../lib/paths';
+import { films } from '../../data/work';
+import { t } from '../../i18n/ui';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+
+const tracks = films.map((f) => {
+  const p = pic(`yt/${f.id}`);
+  return { ...f, when: f.date[lang], poster: p.src, posterSet: p.srcset, thumb: p.url(480) };
+});
+const first = tracks[0];
+---
+
+<Base lang={lang} page="visuals" title={s.visuals.title}>
+  <div class="stack deck">
+    <Window heading="h1" title={s.visuals.title} dark bodyClass="screen" class="deck__player">
+      <div class="screen__frame" data-screen>
+        <button type="button" class="screen__poster" data-play aria-label={`${s.visuals.play}: ${first.title}`}>
+          <img
+            data-poster
+            src={first.poster}
+            srcset={first.posterSet}
+            sizes="(max-width: 1000px) 100vw, 720px"
+            alt=""
+            width="1280"
+            height="720"
+            decoding="async"
+          />
+          <span class="screen__play" aria-hidden="true"></span>
+        </button>
+      </div>
+      <Fragment slot="status">
+        <span class="now">
+          <span class="now__lcd">
+            <span class="tech now__label">{s.visuals.nowPlaying}</span>
+            <strong data-now-title>{first.title}</strong>
+            <span data-now-date>{first.when}</span>
+          </span>
+          <a class="gel" data-now-link href={`https://www.youtube.com/watch?v=${first.id}`} target="_blank" rel="noopener noreferrer">
+            {s.visuals.youtube}
+          </a>
+        </span>
+      </Fragment>
+    </Window>
+
+    <Window title={`${s.visuals.title} — Library`} class="deck__list">
+      <Fragment slot="status">
+        <span>{films.length} {s.count.films}</span>
+        <Follow lang={lang} section="visuals" />
+      </Fragment>
+      <div class="cols" aria-hidden="true">
+        <span></span>
+        <span>{s.visuals.colTitle}</span>
+        <span>{s.visuals.colDate}</span>
+      </div>
+      <ol class="rows tracks" data-tracks data-play-label={s.visuals.play}>
+        {
+          tracks.map((f, i) => (
+            <li>
+              <button
+                type="button"
+                class="track"
+                data-id={f.id}
+                data-title={f.title}
+                data-date={f.when}
+                data-ratio={f.ratio}
+                data-poster={f.poster}
+                data-poster-set={f.posterSet}
+                aria-current={i === 0 ? 'true' : undefined}
+              >
+                <img src={f.thumb} alt="" width="480" height="270" loading="lazy" decoding="async" />
+                <span class="track__title">{f.title}</span>
+                <span class="track__date">{f.when}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ol>
+    </Window>
+  </div>
+</Base>
+
+<style>
+  .deck {
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+    align-items: start;
+  }
+  :global(.deck__player) {
+    position: sticky;
+    top: calc(var(--menubar-h) + 16px);
+  }
+  :global(.screen) {
+    line-height: 0;
+  }
+  .screen__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    display: grid;
+    place-items: center;
+    background: #000;
+    overflow: hidden;
+  }
+  .screen__frame :global(iframe) {
+    height: 100%;
+    max-width: 100%;
+    border: 0;
+  }
+  .screen__poster {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    border: 0;
+    background: #000;
+    cursor: pointer;
+  }
+  .screen__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s;
+    opacity: 0.9;
+  }
+  .screen__poster:hover img {
+    opacity: 1;
+  }
+  .screen__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(58px, 8vw, 88px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background:
+      radial-gradient(70% 42% at 50% 16%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%),
+      linear-gradient(180deg, #86bcf6 0%, #2274de 52%, #7cc4ff 100%);
+    box-shadow:
+      0 0 0 1px #173f8a,
+      0 0 0 5px rgba(255, 255, 255, 0.22),
+      0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+  .screen__play::after {
+    content: '';
+    position: absolute;
+    left: 54%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 0.9em 0 0.9em 1.5em;
+    border-color: transparent transparent transparent #06142e;
+    font-size: clamp(10px, 1.4vw, 15px);
+  }
+
+  .now {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 14px;
+    width: 100%;
+    padding: 8px 0 6px;
+    text-shadow: none;
+  }
+  .now__lcd {
+    flex: 1 1 260px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 10px;
+    padding: 5px 14px 6px;
+    border-radius: 999px;
+    color: #1c2416;
+    font-size: 12px;
+    background: linear-gradient(180deg, #c3cbb0 0%, #dfe6cd 55%, #edf2de 100%);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.7),
+      inset 0 2px 5px rgba(0, 0, 0, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+  .now__label {
+    font-size: 8px;
+    opacity: 0.7;
+  }
+
+  .cols,
+  .track {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+  .cols {
+    padding: 3px 12px 3px 8px;
+    font-size: 11px;
+    color: #222;
+    background: linear-gradient(180deg, #fefefe 0%, #e3e3e3 50%, #d2d2d2 51%, #ececec 100%);
+    border-bottom: 1px solid #8d8d8d;
+  }
+  .track {
+    width: 100%;
+    padding: 5px 12px 5px 8px;
+    border: 0;
+    background: none;
+    text-align: left;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .track img {
+    width: 64px;
+    height: 36px;
+    object-fit: cover;
+    background: #000;
+    border-radius: 2px;
+  }
+  .track__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .track__date {
+    font-size: 11px;
+    color: #56607a;
+    font-variant-numeric: tabular-nums;
+  }
+  .track:hover {
+    background: rgba(63, 139, 234, 0.16);
+  }
+  .track[aria-current='true'] {
+    background: var(--select);
+    color: #fff;
+  }
+  .track[aria-current='true'] .track__date {
+    color: #dbe9ff;
+  }
+
+  @media (max-width: 1000px) {
+    .deck {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    :global(.deck__player) {
+      position: static;
+    }
+  }
+  @media (max-width: 760px) {
+    .track {
+      padding-block: 8px;
+      font-size: 13.5px;
+    }
+  }
+</style>
+
+<script>
+  const screen = document.querySelector<HTMLElement>('[data-screen]');
+  const list = document.querySelector<HTMLElement>('[data-tracks]');
+  if (screen && list) {
+    const title = document.querySelector<HTMLElement>('[data-now-title]')!;
+    const date = document.querySelector<HTMLElement>('[data-now-date]')!;
+    const link = document.querySelector<HTMLAnchorElement>('[data-now-link]')!;
+    const posterMarkup = screen.innerHTML;
+    let current = list.querySelector<HTMLButtonElement>('.track[aria-current="true"]')!;
+
+    // The YouTube player is only requested when a visualizer is actually played.
+    const play = () => {
+      const frame = document.createElement('iframe');
+      frame.src = `https://www.youtube-nocookie.com/embed/${current.dataset.id}?autoplay=1&rel=0&playsinline=1`;
+      frame.style.aspectRatio = current.dataset.ratio!;
+      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allowFullscreen = true;
+      frame.title = current.dataset.title!;
+      screen.replaceChildren(frame);
+    };
+
+    const select = (track: HTMLButtonElement, autoplay: boolean) => {
+      current.removeAttribute('aria-current');
+      current = track;
+      current.setAttribute('aria-current', 'true');
+      title.textContent = track.dataset.title!;
+      date.textContent = track.dataset.date!;
+      link.href = `https://www.youtube.com/watch?v=${track.dataset.id}`;
+      if (autoplay) return play();
+      screen.innerHTML = posterMarkup;
+      const img = screen.querySelector<HTMLImageElement>('[data-poster]')!;
+      img.srcset = track.dataset.posterSet!;
+      img.src = track.dataset.poster!;
+      screen.querySelector('[data-play]')!.setAttribute('aria-label', `${list.dataset.playLabel}: ${track.dataset.title}`);
+    };
+
+    screen.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('[data-play]')) play();
+    });
+    list.addEventListener('click', (e) => {
+      const track = (e.target as HTMLElement).closest<HTMLButtonElement>('.track');
+      if (!track) return;
+      select(track, true);
+      if (window.matchMedia('(max-width: 1000px)').matches) screen.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+  }
+</script>

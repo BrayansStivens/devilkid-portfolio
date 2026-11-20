@@ -1,0 +1,114 @@
+---
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import Viewer from '../../components/Viewer.astro';
+import Follow from '../../components/Follow.astro';
+import { langPaths, pic, type Lang } from '../../lib/paths';
+import { plates } from '../../data/work';
+import { t } from '../../i18n/ui';
+
+export const getStaticPaths = langPaths;
+const { lang } = Astro.props as { lang: Lang };
+const s = t(lang);
+
+const sheets = plates.map((plate) => {
+  const p = pic(`art/${plate.file}`);
+  const name = plate.title ? `${s.art.plate} ${plate.no} — ${plate.title}` : `${s.art.plate} ${plate.no}`;
+  return { plate, p, name, views: [{ src: p.src, srcset: p.srcset, thumb: p.url(480), w: p.w, label: name }] };
+});
+---
+
+<Base lang={lang} page="art" title={s.art.title}>
+  <div class="stack">
+    <Window heading="h1" title={s.art.title}>
+      <Fragment slot="status">
+        <span>{plates.length} {s.count.plates} — {s.art.hint}</span>
+        <Follow lang={lang} section="art" />
+      </Fragment>
+      <ul class="wall">
+        {
+          sheets.map(({ plate, p, name, views }, i) => (
+            <li>
+              <button type="button" class="sheet" data-view-group="art" data-title={name} data-views={JSON.stringify(views)}>
+                <img
+                  src={p.url(960)}
+                  srcset={p.srcset}
+                  sizes="(max-width: 760px) 94vw, (max-width: 1180px) 46vw, 370px"
+                  alt={name}
+                  width={p.w}
+                  height={p.h}
+                  loading={i < 3 ? 'eager' : 'lazy'}
+                  decoding="async"
+                />
+                <span class="sheet__cap">
+                  <span class="tech">
+                    {s.art.plate} {plate.no}
+                  </span>
+                  {plate.title && <span class="sheet__title">{plate.title}</span>}
+                </span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
+  </div>
+  <Viewer lang={lang} />
+</Base>
+
+<style>
+  .wall {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(14px, 2.4vw, 30px) clamp(8px, 1.6vw, 22px);
+    margin: 0;
+    padding: clamp(16px, 3vw, 36px) clamp(8px, 2vw, 26px) clamp(22px, 3vw, 40px);
+    list-style: none;
+  }
+  .wall li {
+    flex: 0 1 calc((100% - 2 * clamp(8px, 1.6vw, 22px)) / 3);
+    min-width: 0;
+  }
+  .sheet {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: zoom-in;
+    text-align: center;
+  }
+  .sheet img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .sheet:hover img {
+    transform: scale(1.03) rotate(-0.6deg);
+  }
+  .sheet__cap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px 10px;
+    margin-top: 6px;
+    color: #4a4f5c;
+  }
+  .sheet__title {
+    font: 400 17px/1.1 var(--font-black);
+    color: #111;
+  }
+  @media (max-width: 1000px) {
+    .wall li {
+      flex-basis: calc((100% - clamp(8px, 1.6vw, 22px)) / 2);
+    }
+  }
+  @media (max-width: 560px) {
+    .wall li {
+      flex-basis: 100%;
+    }
+  }
+</style>

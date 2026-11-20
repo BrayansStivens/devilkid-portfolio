@@ -1,0 +1,18 @@
+---
+// "More on <network>" link for a section's status bar.
+import type { Lang } from '../lib/paths';
+import { followFor } from '../data/site';
+import { t } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  section: Parameters<typeof followFor>[0];
+}
+const { lang, section } = Astro.props;
+const x = followFor(section);
+const s = t(lang).social;
+---
+
+<a class="follow" href={x.href} target="_blank" rel="me noopener noreferrer">
+  {`${s.more} ${x.label} `}<span>{x.handle}</span><span class="sr-only"> ({s.newTab})</span>
+</a>
