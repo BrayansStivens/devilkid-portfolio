@@ -4,7 +4,7 @@ import Window from '../../components/Window.astro';
 import Social from '../../components/Social.astro';
 import { langPaths, pic, type Lang } from '../../lib/paths';
 import { mailLink, site, waLink } from '../../data/site';
-import { bio, clients, education, experience, languages, software, strengths } from '../../data/about';
+import { bio, clients, experience, strengths } from '../../data/about';
 import { t } from '../../i18n/ui';
 
 export const getStaticPaths = langPaths;
@@ -12,6 +12,11 @@ const { lang } = Astro.props as { lang: Lang };
 const s = t(lang);
 const a = s.about;
 const portrait = pic('about/portrait');
+// Location and strengths now close the bio instead of sitting in a table.
+const extra =
+  lang === 'es'
+    ? `Vivo en ${site.location}. Fortalezas: ${strengths.map((x) => x.es.toLowerCase()).join(', ')}.`
+    : `Based in ${site.location}. Strengths: ${strengths.map((x) => x.en.toLowerCase()).join(', ')}.`;
 const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm {name}.";
 ---
 
@@ -31,42 +36,14 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
         />
         <div class="id__copy">
           <p class="id__mark"><span aria-hidden="true">𝕯𝖊𝖛𝖎𝖑 𝕶𝖎𝖉</span><span class="sr-only">{site.name}</span></p>
-          <p class="id__name">{site.person}</p>
           <p class="id__roles tech">{s.roles.join(' / ')}</p>
           <p class="id__bio">{bio[lang]}</p>
-          <dl class="specs">
-            <div>
-              <dt>{a.based}</dt>
-              <dd>{site.location}</dd>
-            </div>
-            <div>
-              <dt>{a.experienceYears}</dt>
-              <dd>{a.experienceValue}</dd>
-            </div>
-            <div>
-              <dt>{a.languages}</dt>
-              <dd>{languages.map((l) => l[lang]).join(' · ')}</dd>
-            </div>
-            <div>
-              <dt>{a.education}</dt>
-              <dd>
-                {education.map((e) => (
-                  <span class="specs__line">
-                    {e.title[lang]} — {e.school}, {e.when}
-                  </span>
-                ))}
-              </dd>
-            </div>
-            <div>
-              <dt>{a.strengths}</dt>
-              <dd>{strengths.map((x) => x[lang]).join(' · ')}</dd>
-            </div>
-          </dl>
+          <p class="id__bio id__bio--more">{extra}</p>
         </div>
       </div>
     </Window>
 
-    <Window title={a.clients} status={`${clients.length} ${s.count.items}`}>
+    <Window title={a.clients} status={`${clients.length} ${s.count.items}`} class="about__pane">
       <ul class="rows table">
         {
           clients.map((c) => (
@@ -79,8 +56,7 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
       </ul>
     </Window>
 
-    <div class="about__side">
-      <Window title={a.experience}>
+    <Window title={a.experience} status={`${experience.length} ${s.count.items}`} class="about__pane">
         <ol class="rows jobs">
           {
             experience.map((e) => (
@@ -94,25 +70,7 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
             ))
           }
         </ol>
-      </Window>
-
-      <Window title={a.software}>
-        <ul class="rows levels">
-          {
-            software.map((x) => (
-              <li>
-                <span>{x.name}</span>
-                <span class="dots" role="img" aria-label={`${x.level} / 5`}>
-                  {[1, 2, 3, 4, 5].map((n) => <i class:list={{ on: n <= x.level }} />)}
-                </span>
-              </li>
-            ))
-          }
-        </ul>
-      </Window>
-
-      <Social lang={lang} />
-    </div>
+    </Window>
 
     <Window variant="aqua" title={a.contact} id="contact" class="about__mail">
       <form class="mail" data-compose data-intro={intro} data-subject={a.subject} data-wa={site.whatsapp} data-mail={site.email}>
@@ -137,22 +95,38 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
         </p>
       </form>
     </Window>
+
+    <Social lang={lang} />
   </div>
 </Base>
 
 <style>
   .about {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
+    align-items: stretch;
   }
-  :global(.about__id),
-  :global(.about__mail) {
+  :global(.about__id) {
     grid-column: 1 / -1;
   }
-  .about__side {
-    display: grid;
-    gap: 28px;
-    min-width: 0;
+  /* Customers and Experience: same height, each list scrolls inside its window. */
+  :global(.about__pane) {
+    display: flex;
+    flex-direction: column;
+    height: 440px;
+  }
+  :global(.about__pane .win__body) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* Contact gets the room; profiles sit beside it. */
+  :global(.about__mail) {
+    grid-column: 1 / 2;
+    align-self: start;
+  }
+  .about :global(.online) {
+    align-self: start;
   }
 
   .id {
@@ -177,16 +151,11 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
   }
   .id__mark {
     margin: -0.08em 0 0;
-    font: 400 clamp(3rem, 6.4vw, 5.2rem) / 1.05 var(--font-mark);
+    font: 400 54px / 1.15 var(--font-mark);
     color: #0c0c0c;
   }
-  .id__name {
-    margin: 6px 0 0;
-    font-size: 15px;
-    font-weight: 700;
-  }
   .id__roles {
-    margin: 4px 0 0;
+    margin: 6px 0 0;
     color: #2a5fc9;
     font-size: 8.5px;
   }
@@ -197,32 +166,10 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
     line-height: 1.62;
     color: #1b1b1b;
   }
-  .specs {
-    margin: 20px 0 0;
-    max-width: 62ch;
-    font-size: 12.5px;
-    border-top: 1px solid rgba(0, 0, 0, 0.18);
+  .id__bio--more {
+    margin-top: 10px;
   }
-  .specs > div {
-    display: grid;
-    grid-template-columns: 8.5em 1fr;
-    gap: 12px;
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  }
-  .specs dt {
-    font-weight: 700;
-    text-align: right;
-  }
-  .specs dd {
-    margin: 0;
-  }
-  .specs__line {
-    display: block;
-  }
-
-  .table li,
-  .levels li {
+  .table li {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     gap: 12px;
@@ -256,28 +203,6 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
     font-size: 12.5px;
     line-height: 1.5;
     color: #333;
-  }
-
-  .levels li {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-  }
-  .dots {
-    display: inline-flex;
-    gap: 5px;
-  }
-  .dots i {
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: #dfe3ea;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-  }
-  .dots i.on {
-    background:
-      radial-gradient(70% 45% at 50% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 70%),
-      linear-gradient(180deg, #4c97ee, #1a57c8);
-    box-shadow: 0 0 0 0.5px #173f8a;
   }
 
   .mail {
@@ -341,24 +266,25 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
     .about {
       grid-template-columns: minmax(0, 1fr);
     }
-    .about__side {
-      gap: 18px;
+    :global(.about__pane) {
+      height: 380px;
     }
   }
   @media (max-width: 760px) {
     .id {
       grid-template-columns: 1fr;
     }
+    .id__mark {
+      font-size: 42px;
+    }
     .id__photo {
-      max-width: 340px;
+      max-width: 260px;
       justify-self: center;
     }
-    .specs > div,
     .mail__row {
       grid-template-columns: 1fr;
       gap: 2px;
     }
-    .specs dt,
     .mail__key {
       text-align: left;
     }
