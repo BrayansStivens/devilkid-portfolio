@@ -1,9 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Window from '../../components/Window.astro';
-import Social from '../../components/Social.astro';
 import { asset, langPaths, pic, route, type Lang } from '../../lib/paths';
-import { site, waLink, type SectionId } from '../../data/site';
+import { site, type SectionId } from '../../data/site';
 import { pieces } from '../../data/fashion';
 import { films, marks, plates } from '../../data/work';
 import { clients } from '../../data/about';
@@ -63,10 +62,6 @@ const reel = pic('reel/poster');
       </span>
     </div>
 
-    <p class="roles tech">
-      {s.roles.map((r, i) => <span>{i > 0 && <b aria-hidden="true">/</b>}{r}</span>)}
-    </p>
-
     <Window variant="aqua" title={s.hero.dialogTitle} titleHidden class="hello">
       <div class="note">
         <span class="devil-gel note__icon" aria-hidden="true"></span>
@@ -74,7 +69,6 @@ const reel = pic('reel/poster');
           <p class="note__title">{s.hero.dialogTitle}</p>
           <p class="note__text">{s.hero.dialogText}</p>
           <p class="note__actions">
-            <a class="gel" href={waLink(s.waHello)} target="_blank" rel="noopener noreferrer">{s.hero.whatsapp}</a>
             <a class="gel gel--blue" href={route(lang, 'fashion')}>{s.hero.enter}</a>
           </p>
         </div>
@@ -82,19 +76,21 @@ const reel = pic('reel/poster');
     </Window>
   </section>
 
-  <div class="lcd" role="group" aria-label={s.home.clients}>
-    <span class="lcd__tag tech">{s.home.clients}</span>
-    <div class="lcd__window">
-      <div class="lcd__track">
-        <ul>
-          {clients.map((c) => <li>{c.name}</li>)}
-        </ul>
-        <ul aria-hidden="true">
-          {clients.map((c) => <li>{c.name}</li>)}
-        </ul>
-      </div>
-    </div>
-  </div>
+  <nav class="lcd" aria-label={s.social.title}>
+    <span class="lcd__tag tech">{s.social.title}</span>
+    <ul>
+      {
+        site.socials.map((x) => (
+          <li>
+            <a href={x.href} target="_blank" rel="me noopener noreferrer">
+              <b>{x.label}</b><span class="lcd__handle">{x.handle}</span>
+              <span class="sr-only"> ({s.social.newTab})</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
 
   <div class="stack home">
     <Window title={s.home.volume} status={s.home.volumeStatus(total)}>
@@ -120,7 +116,18 @@ const reel = pic('reel/poster');
       </ul>
     </Window>
 
-    <Social lang={lang} />
+    <Window title={s.home.clients} status={`${clients.length} ${s.count.items}`}>
+      <ul class="rows clients">
+        {
+          clients.map((c) => (
+            <li>
+              <strong>{c.name}</strong>
+              <span>{c.what[lang]}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
   </div>
 </Base>
 
@@ -219,7 +226,7 @@ const reel = pic('reel/poster');
   .lockup {
     position: relative;
     z-index: 1;
-    --head: clamp(96px, 15vmin, 150px);
+    --head: clamp(120px, 21vmin, 210px);
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     grid-template-areas: 'l head r';
@@ -227,7 +234,7 @@ const reel = pic('reel/poster');
     align-items: center;
     column-gap: 0.3em;
     width: 100%;
-    font-size: 40px;
+    font-size: 54px;
   }
   .word {
     position: relative;
@@ -285,25 +292,6 @@ const reel = pic('reel/poster');
     opacity: 0;
   }
 
-  .roles {
-    position: relative;
-    z-index: 1;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 4px 0;
-    color: #e6e8ef;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
-    font-size: clamp(8.5px, 1.05vw, 11.5px);
-    text-align: center;
-  }
-  .roles b {
-    margin: 0 1.1em;
-    color: var(--aqua);
-    font-weight: 400;
-  }
-
   :global(.hello) {
     width: min(470px, 100%);
     z-index: 3;
@@ -339,7 +327,7 @@ const reel = pic('reel/poster');
     flex: 1 1 130px;
   }
 
-  /* Client ticker, styled as the LCD of an early-2000s player. */
+  /* Profiles strip, styled as the LCD of an early-2000s player. */
   .lcd {
     width: min(1180px, 100% - var(--gutter) * 2);
     margin: 6px auto 0;
@@ -361,42 +349,55 @@ const reel = pic('reel/poster');
     font-size: 9px;
     opacity: 0.75;
   }
-  .lcd__window {
-    overflow: hidden;
-    -webkit-mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-    mask: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-  }
-  .lcd__track {
-    display: flex;
-    width: max-content;
-    animation: ticker 70s linear infinite;
-  }
-  .lcd:hover .lcd__track,
-  .lcd:focus-within .lcd__track {
-    animation-play-state: paused;
-  }
   .lcd ul {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 2px 12px;
     margin: 0;
     padding: 0;
     list-style: none;
     font: 400 11px/1.8 var(--font-tech);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.06em;
     white-space: nowrap;
   }
-  .lcd li::after {
-    content: '✦';
-    margin: 0 1.4em;
-    font-size: 0.8em;
+  .lcd a {
+    display: grid;
+    color: inherit;
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  .lcd a b {
+    font-weight: 400;
+    font-size: 9px;
+    text-transform: uppercase;
     opacity: 0.6;
   }
-  @keyframes ticker {
-    to {
-      transform: translateX(-50%);
-    }
+  .lcd__handle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lcd a:hover,
+  .lcd a:focus-visible {
+    text-decoration: underline;
   }
 
+  .clients {
+    max-height: 262px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .clients li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 5px 12px;
+    font-size: 12.5px;
+  }
+  .clients span {
+    color: #48526a;
+    font-size: 11.5px;
+    text-align: right;
+  }
   .home {
     grid-template-columns: minmax(0, 1.9fr) minmax(280px, 1fr);
     align-items: start;
@@ -514,24 +515,8 @@ const reel = pic('reel/poster');
 
   @media (max-width: 760px) {
     .lockup {
-      --head: 92px;
-      font-size: 30px;
-    }
-    .roles {
-      display: grid;
-      grid-template-columns: auto auto;
-      justify-content: center;
-      gap: 6px 2.2em;
-      font-size: 8.5px;
-    }
-    .roles span:nth-child(odd) {
-      text-align: right;
-    }
-    .roles span:nth-child(even) {
-      text-align: left;
-    }
-    .roles b {
-      display: none;
+      --head: 104px;
+      font-size: 34px;
     }
     .note {
       padding: 14px;
@@ -548,22 +533,15 @@ const reel = pic('reel/poster');
     }
     .lcd {
       border-radius: 12px;
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+    .lcd ul {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      row-gap: 6px;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .lcd__track {
-      animation: none;
-      flex-wrap: wrap;
-      width: auto;
-    }
-    .lcd ul {
-      flex-wrap: wrap;
-    }
-    .lcd ul[aria-hidden] {
-      display: none;
-    }
-  }
 </style>
 
 <script>
