@@ -219,20 +219,20 @@ const reel = pic('reel/poster');
   .lockup {
     position: relative;
     z-index: 1;
-    --head: clamp(190px, 42vmin, 420px);
+    --head: clamp(96px, 15vmin, 150px);
     display: grid;
-    grid-template-columns: auto auto;
-    grid-template-areas: 'head head' 'l r';
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: 'l head r';
     justify-content: center;
     align-items: center;
-    column-gap: 0.26em;
+    column-gap: 0.3em;
     width: 100%;
     font-size: 40px;
   }
   .word {
     position: relative;
     font: 400 1em / 1.1 var(--font-mark);
-    margin-top: 4px;
+    margin-top: 0;
     color: #eef0f5;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85), 0 0 18px rgba(0, 0, 0, 0.6);
     user-select: none;
@@ -514,8 +514,8 @@ const reel = pic('reel/poster');
 
   @media (max-width: 760px) {
     .lockup {
-      --head: min(64vw, 40vh);
-      font-size: 34px;
+      --head: 92px;
+      font-size: 30px;
     }
     .roles {
       display: grid;

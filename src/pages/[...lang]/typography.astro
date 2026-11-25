@@ -12,7 +12,7 @@ const { lang } = Astro.props as { lang: Lang };
 const s = t(lang);
 
 const START = 16;
-const finishes: (Exclude<Finish, 'onyx'> | 'ink')[] = ['chrome', 'gold', 'candy', 'ink'];
+const finishes: (Exclude<Finish, 'onyx'> | 'ink')[] = ['chrome', 'gray', 'gold', 'candy', 'ink'];
 const tiles = marks.map((m, i) => {
   const p = pic(`typography/${m.file}`);
   const no = String(i + 1).padStart(2, '0');
@@ -235,7 +235,7 @@ const first = tiles[START];
     const grid = window.matchMedia('(max-width: 760px)').matches ? 300 : 420;
 
     const cast = () =>
-      stage?.setLayers([{ mask, finish: finish === 'ink' ? 'chrome' : finish, grid, roundness: 0.03, depth: 1.7, soften: 3 }]);
+      stage?.setLayers([{ mask, finish: finish === 'ink' ? 'chrome' : finish, grid, roundness: 0.024, depth: 0.8, soften: 3 }]);
 
     const setFinish = (next: Finish | 'ink') => {
       finish = next;
@@ -246,7 +246,7 @@ const first = tiles[START];
 
     import('../../scripts/chrome/stage')
       .then(async ({ ChromeStage }) => {
-        stage = new ChromeStage(canvas, { fit: 0.78 });
+        stage = new ChromeStage(canvas, { fit: 0.6 });
         await cast();
         setFinish('chrome');
         stage.start();

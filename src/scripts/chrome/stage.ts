@@ -21,7 +21,7 @@ import {
 } from 'three';
 import { inflate, loadImage, type InflateOptions } from './inflate';
 
-export type Finish = 'chrome' | 'gold' | 'candy' | 'onyx';
+export type Finish = 'chrome' | 'gray' | 'gold' | 'candy' | 'onyx';
 
 export interface Layer extends InflateOptions {
   mask: string;
@@ -49,6 +49,26 @@ interface EnvSpec {
 
 // u = 0.75 is straight behind the camera, so that is where the key lights sit.
 const ENVS: Record<Exclude<Finish, 'onyx'>, EnvSpec> = {
+  gray: {
+    sky: [
+      [0, '#0b0b0c'],
+      [0.22, '#3a3b3e'],
+      [0.4, '#8c8e93'],
+      [0.482, '#e4e5e8'],
+      [0.498, '#ffffff'],
+      [0.512, '#060606'],
+      [0.6, '#2a2a2c'],
+      [0.78, '#76777b'],
+      [0.9, '#c9cacd'],
+      [1, '#101011'],
+    ],
+    strips: [
+      { u: 0.66, w: 0.03, v0: 0.08, v1: 0.47, color: 'rgba(255,255,255,1)' },
+      { u: 0.86, w: 0.018, v0: 0.14, v1: 0.47, color: 'rgba(255,255,255,0.95)' },
+      { u: 0.2, w: 0.04, v0: 0.1, v1: 0.47, color: 'rgba(255,255,255,0.8)' },
+    ],
+    spots: [{ u: 0.76, v: 0.27, r: 0.045, color: '#ffffff' }],
+  },
   chrome: {
     sky: [
       [0, '#040c2c'],
@@ -119,6 +139,7 @@ const ENVS: Record<Exclude<Finish, 'onyx'>, EnvSpec> = {
 
 const LOOK: Record<Finish, { env: keyof typeof ENVS; color: string; roughness: number; intensity: number }> = {
   chrome: { env: 'chrome', color: '#ffffff', roughness: 0.1, intensity: 1.1 },
+  gray: { env: 'gray', color: '#e6e7ea', roughness: 0.12, intensity: 1.1 },
   gold: { env: 'gold', color: '#ffe2a0', roughness: 0.09, intensity: 1.15 },
   candy: { env: 'candy', color: '#dbe8ff', roughness: 0.07, intensity: 1.15 },
   onyx: { env: 'chrome', color: '#4b4f60', roughness: 0.16, intensity: 1 },
