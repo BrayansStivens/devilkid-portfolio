@@ -13,9 +13,11 @@ interface Props {
   page: 'home' | SectionId;
   title?: string;
   description?: string;
+  /** Splash page: no menu bar, dock or footer. */
+  bare?: boolean;
 }
 
-const { lang, page, title, description } = Astro.props;
+const { lang, page, title, description, bare = false } = Astro.props;
 const s = t(lang);
 const slug = page === 'home' ? '' : page;
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${s.roles.join(' | ')}`;
@@ -69,13 +71,14 @@ const vars = [
     <style is:inline set:html={`@font-face{font-family:'DK Fraktur';src:url(${asset('fonts/dk-fraktur.woff2')}) format('woff2');font-display:swap;unicode-range:U+1D56C-1D59F;}`} />
     <slot name="head" />
   </head>
-  <body data-page={page}>
+  <body data-page={page} class:list={{ bare }}>
     <a class="skip" href="#main">{s.skip}</a>
     <div class="desk" aria-hidden="true"></div>
-    <MenuBar lang={lang} page={page} />
+    {!bare && <MenuBar lang={lang} page={page} />}
     <main id="main">
       <slot />
     </main>
+    {!bare && (
     <footer class="foot">
       <span>&copy;{site.name}. {s.footer.rights}</span>
       <ul>
@@ -90,6 +93,7 @@ const vars = [
         }
       </ul>
     </footer>
-    <Dock lang={lang} page={page} />
+    )}
+    {!bare && <Dock lang={lang} page={page} />}
   </body>
 </html>

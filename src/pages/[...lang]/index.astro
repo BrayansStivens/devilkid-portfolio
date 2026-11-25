@@ -1,66 +1,43 @@
 ---
+// Splash: his cover footage in night-vision green, shot as if on a 2007
+// camcorder, with the portfolio dialog as the only way in.
 import Base from '../../layouts/Base.astro';
 import Window from '../../components/Window.astro';
-import { asset, langPaths, pic, route, type Lang } from '../../lib/paths';
-import { site, type SectionId } from '../../data/site';
-import { pieces } from '../../data/fashion';
-import { films, marks, plates } from '../../data/work';
-import { clients } from '../../data/about';
+import { langPaths, pic, route, type Lang } from '../../lib/paths';
+import { site } from '../../data/site';
 import { t } from '../../i18n/ui';
 
 export const getStaticPaths = langPaths;
 const { lang } = Astro.props as { lang: Lang };
 const s = t(lang);
-
-const folders: { id: SectionId; count: number; unit: string; stack: string[]; kind: 'cut' | 'print' | 'film' | 'mark' }[] = [
-  {
-    id: 'fashion',
-    count: pieces.length,
-    unit: s.count.pieces,
-    kind: 'cut',
-    stack: ['fashion/jacket-front-73d191.png', 'fashion/162-8c8ef7.png', 'fashion/western-jacket-back-73d191.png'],
-  },
-  { id: 'art', count: plates.length, unit: s.count.plates, kind: 'print', stack: ['art/7-225ec6.png', 'art/5-170588.png', 'art/1-999b6e.png'] },
-  { id: 'visuals', count: films.length, unit: s.count.films, kind: 'film', stack: ['yt/vI2O_K26R00', 'yt/wSNZ3WHra54', 'yt/wwR4XaDXatw'] },
-  {
-    id: 'typography',
-    count: marks.length,
-    unit: s.count.marks,
-    kind: 'mark',
-    stack: ['typography/6-1c3254.png', 'typography/3-8b7f94.png', 'typography/23-bf841e.png'],
-  },
-];
-const total = folders.reduce((n, f) => n + f.count, 0);
+const other: Lang = lang === 'en' ? 'es' : 'en';
 const reel = pic('reel/poster');
 ---
 
-<Base lang={lang} page="home">
-  <section class="hero">
+<Base lang={lang} page="home" bare>
+  <section class="splash">
+    <h1 class="sr-only">{site.name} — {s.roles.join(', ')}</h1>
+
     <div class="cover" aria-hidden="true" data-cover data-vimeo={site.reel.vimeoId} data-title={s.home.reelTitle}>
       <img src={reel.src} srcset={reel.srcset} sizes="100vw" alt="" width={reel.w} height={reel.h} fetchpriority="high" decoding="async" />
     </div>
-    <button class="cover__toggle" type="button" data-cover-toggle data-pause={s.hero.pause} data-play={s.hero.play} aria-label={s.hero.pause} aria-pressed="false" hidden>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Viewfinder read-out of a 2007 Handycam in night mode. -->
+    <div class="hud" aria-hidden="true">
+      <p class="hud__tl"><span class="hud__rec">●</span> REC <span data-hud-tc>0:00:00</span></p>
+      <p class="hud__tr"><span class="hud__batt"><i></i></span> 60min</p>
+      <p class="hud__ml"><span class="hud__night">◐</span> NIGHTSHOT</p>
+      <p class="hud__bl">
+        <span data-hud-date>NOV 25 2026</span><br />
+        <span data-hud-time>11:06:00 PM</span>
+      </p>
+    </div>
+
+    <a class="lang" href={route(other)} hreflang={other} lang={other} aria-label={s.langSwitch}>{s.langSwitchShort}</a>
+    <button class="toggle" type="button" data-cover-toggle data-pause={s.hero.pause} data-play={s.hero.play} aria-label={s.hero.pause} aria-pressed="false" hidden>
       <span aria-hidden="true"></span>
     </button>
-    <h1 class="sr-only">{site.name} — {s.roles.join(', ')}</h1>
-    <div class="lockup" aria-hidden="true">
-      <span class="word word--l">
-        𝕯𝖊𝖛𝖎𝖑<i class="glint" style="--g:34px;top:4%;left:8%;--d:.2s"></i>
-      </span>
-      <div
-        class="head"
-        data-hero
-        data-logo={asset('brand/logo-mask.png')}
-        data-body={asset('brand/logo-silhouette.png')}
-        title={s.hero.spin}
-      >
-        <span class="devil head__flat"></span>
-        <canvas></canvas>
-      </div>
-      <span class="word word--r">
-        𝕶𝖎𝖉<i class="glint" style="--g:26px;top:10%;right:2%;--d:1.4s"></i>
-      </span>
-    </div>
 
     <Window variant="aqua" title={s.hero.dialogTitle} titleHidden class="hello">
       <div class="note">
@@ -75,70 +52,26 @@ const reel = pic('reel/poster');
       </div>
     </Window>
   </section>
-
-  <div class="stack home">
-    <Window title={s.home.volume} status={s.home.volumeStatus(total)}>
-      <ul class="folders">
-        {
-          folders.map((f) => (
-            <li>
-              <a class:list={['folder', `folder--${f.kind}`]} href={route(lang, f.id)}>
-                <span class="folder__stack" aria-hidden="true">
-                  {f.stack.map((key) => {
-                    const p = pic(key);
-                    return <img src={p.url(480)} alt="" width={p.w} height={p.h} loading="lazy" decoding="async" />;
-                  })}
-                </span>
-                <span class="folder__name">{s.nav[f.id]}</span>
-                <span class="folder__meta">
-                  {f.count} {f.unit}
-                </span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </Window>
-
-    <Window title={s.home.clients} status={`${clients.length} ${s.count.items}`}>
-      <ul class="rows clients">
-        {
-          clients.map((c) => (
-            <li>
-              <strong>{c.name}</strong>
-              <span>{c.what[lang]}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </Window>
-  </div>
 </Base>
 
 <style>
-  .hero {
+  .splash {
     position: relative;
-    min-height: clamp(400px, 58svh, 640px);
+    min-height: 100svh;
     display: grid;
-    grid-template-rows: auto auto;
-    align-content: center;
-    justify-items: center;
-    align-items: center;
-    gap: clamp(28px, 5vh, 52px);
-    padding: clamp(40px, 9vh, 96px) var(--gutter) clamp(20px, 3vh, 32px);
+    place-items: center;
+    padding: 72px 16px;
     overflow: clip;
+    background: #000;
   }
 
-  /* Cover footage: plays muted behind the lockup, like the cover of his old site. */
+  /* Footage turned to night-vision green: grey first, then tinted. */
   .cover {
     position: absolute;
     inset: 0;
-    z-index: 0;
     overflow: hidden;
     container-type: size;
-    background: #050506;
-    -webkit-mask: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
-    mask: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+    background: #010501;
   }
   .cover img,
   .cover :global(iframe) {
@@ -150,7 +83,7 @@ const reel = pic('reel/poster');
     max-width: none;
     transform: translate(-50%, -50%);
     border: 0;
-    filter: brightness(0.92) contrast(1.08);
+    filter: grayscale(1) contrast(1.3) brightness(1.12) blur(0.35px);
   }
   .cover img {
     object-fit: cover;
@@ -163,19 +96,156 @@ const reel = pic('reel/poster');
   .cover:global(.is-playing) :global(iframe) {
     opacity: 1;
   }
+  /* Green phosphor: whites become green, blacks stay deep. */
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #46ff6a;
+    mix-blend-mode: multiply;
+  }
+  /* Lifted blacks, bloom in the middle, lens vignette, scan lines. */
   .cover::after {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 2;
     background:
-      radial-gradient(60% 46% at 50% 36%, rgba(4, 4, 6, 0.26) 0%, rgba(4, 4, 6, 0.5) 100%),
-      linear-gradient(180deg, rgba(4, 4, 6, 0.42) 0%, rgba(4, 4, 6, 0.12) 30%, rgba(4, 4, 6, 0.6) 100%);
+      repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px),
+      radial-gradient(120% 90% at 50% 50%, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0.92) 100%),
+      radial-gradient(55% 45% at 50% 50%, rgba(120, 255, 140, 0.1), rgba(120, 255, 140, 0) 70%),
+      rgba(10, 40, 12, 0.18);
   }
-  .cover__toggle {
+
+  /* Sensor noise. */
+  .grain {
     position: absolute;
-    top: 12px;
-    right: var(--gutter);
+    inset: -50%;
+    z-index: 1;
+    opacity: 0.16;
+    mix-blend-mode: screen;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 1 0 0 0 0 .55 0 0 0 1.4 -.25'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 0.6s steps(4) infinite;
+    pointer-events: none;
+  }
+  @keyframes grain {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-6%, 4%);
+    }
+    50% {
+      transform: translate(5%, -3%);
+    }
+    75% {
+      transform: translate(-3%, -6%);
+    }
+  }
+
+  /* Viewfinder text: white with the hard shadow of an on-screen display. */
+  .hud {
+    position: absolute;
+    inset: clamp(16px, 4vw, 44px);
+    z-index: 2;
+    color: #f2fff2;
+    font: 700 clamp(13px, 1.5vw, 19px) / 1.25 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.04em;
+    text-shadow:
+      1px 1px 0 rgba(0, 0, 0, 0.85),
+      0 0 6px rgba(160, 255, 170, 0.45);
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .hud p {
+    position: absolute;
+    margin: 0;
+  }
+  .hud__tl {
+    top: 0;
+    left: 0;
+  }
+  .hud__tr {
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hud__ml {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+  }
+  .hud__bl {
+    bottom: 0;
+    left: 0;
+  }
+  .hud__rec {
+    color: #ff3b30;
+    text-shadow: 0 0 6px rgba(255, 60, 40, 0.7);
+    animation: blink 1s steps(1) infinite;
+  }
+  .hud__night {
+    margin-right: 4px;
+  }
+  .hud__batt {
+    position: relative;
+    width: 1.7em;
+    height: 0.85em;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+  }
+  .hud__batt::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    width: 3px;
+    height: 45%;
+    transform: translateY(-50%);
+    background: currentColor;
+  }
+  .hud__batt i {
+    position: absolute;
+    inset: 2px 30% 2px 2px;
+    background: currentColor;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .lang,
+  .toggle {
+    position: absolute;
     z-index: 4;
+    bottom: clamp(16px, 4vw, 44px);
+  }
+  .lang {
+    right: calc(clamp(16px, 4vw, 44px) + 44px);
+    display: grid;
+    place-items: center;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: #f2fff2;
+    font: 700 12px/1 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    text-decoration: none;
+    border: 1px solid rgba(220, 255, 220, 0.55);
+    background: rgba(0, 20, 0, 0.35);
+  }
+  .lang:hover,
+  .lang:focus-visible {
+    background: rgba(0, 40, 0, 0.6);
+  }
+  .toggle {
+    right: clamp(16px, 4vw, 44px);
     width: 30px;
     height: 30px;
     padding: 0;
@@ -188,18 +258,18 @@ const reel = pic('reel/poster');
     box-shadow:
       0 0 0 1px rgba(0, 0, 0, 0.6),
       0 2px 5px rgba(0, 0, 0, 0.5);
-    opacity: 0.75;
+    opacity: 0.8;
   }
-  .cover__toggle:hover,
-  .cover__toggle:focus-visible {
+  .toggle:hover,
+  .toggle:focus-visible {
     opacity: 1;
   }
-  .cover__toggle span {
+  .toggle span {
     width: 9px;
     height: 10px;
     border-inline: 3px solid #1a1a1a;
   }
-  .cover__toggle[aria-pressed='true'] span {
+  .toggle[aria-pressed='true'] span {
     width: 0;
     height: 0;
     margin-left: 3px;
@@ -208,78 +278,10 @@ const reel = pic('reel/poster');
     border-color: transparent transparent transparent #1a1a1a;
   }
 
-  .lockup {
-    position: relative;
-    z-index: 1;
-    --head: 76px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-areas: 'l head r';
-    justify-content: center;
-    align-items: center;
-    column-gap: 0.3em;
-    width: 100%;
-    font-size: 44px;
-  }
-  .word {
-    position: relative;
-    font: 400 1em / 1.1 var(--font-mark);
-    margin-top: 0;
-    color: #eef0f5;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85), 0 0 18px rgba(0, 0, 0, 0.6);
-    user-select: none;
-  }
-  .word--l {
-    grid-area: l;
-    justify-self: end;
-  }
-  .word--r {
-    grid-area: r;
-    justify-self: start;
-  }
-  .word .glint {
-    display: none;
-  }
-  .head {
-    grid-area: head;
-    justify-self: center;
-    position: relative;
-    z-index: 2;
-    width: var(--head);
-    aspect-ratio: 1;
-  }
-  .head canvas {
-    position: absolute;
-    inset: -38%;
-    width: 176%;
-    height: 176%;
-    max-width: none;
-    touch-action: pan-y;
-    cursor: grab;
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-  .head :global(canvas.is-grabbing) {
-    cursor: grabbing;
-  }
-  .head__flat {
-    position: absolute;
-    inset: 12% 2%;
-    width: 96%;
-    background: var(--chrome-text);
-    filter: drop-shadow(0 3px 0 #000);
-    transition: opacity 0.5s;
-  }
-  .head:global(.is-live) canvas {
-    opacity: 1;
-  }
-  .head:global(.is-live) .head__flat {
-    opacity: 0;
-  }
-
   :global(.hello) {
-    width: min(470px, 100%);
+    position: relative;
     z-index: 3;
+    width: min(470px, 100%);
   }
   .note {
     display: grid;
@@ -304,151 +306,13 @@ const reel = pic('reel/poster');
   }
   .note__actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
     margin: 12px 0 0;
   }
   .note__actions .gel {
-    flex: 1 1 130px;
-  }
-
-  .clients {
-    max-height: 262px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .clients li {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 12px;
-    padding: 5px 12px;
-    font-size: 12.5px;
-  }
-  .clients span {
-    color: #48526a;
-    font-size: 11.5px;
-    text-align: right;
-  }
-  .home {
-    grid-template-columns: minmax(0, 1.9fr) minmax(280px, 1fr);
-    align-items: start;
-  }
-  @media (max-width: 900px) {
-    .home {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  /* Finder-style volume: one stack of work per folder. */
-  .folders {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
-    margin: 0;
-    padding: clamp(18px, 3vw, 34px) clamp(8px, 2vw, 24px) clamp(14px, 2vw, 24px);
-    list-style: none;
-  }
-  .folder {
-    display: grid;
-    justify-items: center;
-    gap: 4px;
-    padding: 8px 6px 12px;
-    text-decoration: none;
-    color: #111;
-    border-radius: 8px;
-  }
-  .folder__stack {
-    position: relative;
-    display: block;
-    width: min(100%, 230px);
-    aspect-ratio: 1;
-    margin-bottom: 10px;
-  }
-  .folder__stack img {
-    position: absolute;
-    inset: 9%;
-    width: 82%;
-    height: 82%;
-    object-fit: contain;
-    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.1);
-    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
-  }
-  .folder--print .folder__stack img,
-  .folder--film .folder__stack img {
-    object-fit: cover;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
-  }
-  .folder--print .folder__stack img {
-    inset: 6% 17%;
-    width: 66%;
-    height: 88%;
-    background: #fff;
-  }
-  .folder--film .folder__stack img {
-    inset: 27% 4%;
-    width: 92%;
-    height: 52%;
-  }
-  .folder--mark .folder__stack img {
-    filter: none;
-  }
-  .folder__stack img:nth-child(1) {
-    transform: translate(-13%, 2%) rotate(-9deg);
-  }
-  .folder__stack img:nth-child(2) {
-    transform: translate(13%, -1%) rotate(8deg);
-  }
-  .folder__stack img:nth-child(3) {
-    transform: translateY(5%);
-  }
-  .folder--mark .folder__stack img:nth-child(1) {
-    transform: translate(-4%, -30%) rotate(-4deg) scale(0.78);
-  }
-  .folder--mark .folder__stack img:nth-child(2) {
-    transform: translate(3%, 31%) rotate(3deg) scale(0.74);
-  }
-  .folder--mark .folder__stack img:nth-child(3) {
-    transform: scale(0.8);
-  }
-  .folder:hover .folder__stack img:nth-child(1) {
-    transform: translate(-22%, -2%) rotate(-14deg);
-  }
-  .folder:hover .folder__stack img:nth-child(2) {
-    transform: translate(22%, -4%) rotate(13deg);
-  }
-  .folder:hover .folder__stack img:nth-child(3) {
-    transform: translateY(1%) scale(1.04);
-  }
-  .folder--mark:hover .folder__stack img:nth-child(1) {
-    transform: translate(-6%, -36%) rotate(-6deg) scale(0.82);
-  }
-  .folder--mark:hover .folder__stack img:nth-child(2) {
-    transform: translate(5%, 37%) rotate(5deg) scale(0.78);
-  }
-  .folder--mark:hover .folder__stack img:nth-child(3) {
-    transform: scale(0.86);
-  }
-  .folder__name {
-    padding: 1px 10px 2px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .folder:hover .folder__name,
-  .folder:focus-visible .folder__name {
-    background: var(--select);
-    color: #fff;
-  }
-  .folder__meta {
-    font-size: 11px;
-    color: #2f6bd8;
+    flex: 1;
   }
 
   @media (max-width: 760px) {
-    .lockup {
-      --head: 54px;
-      font-size: 30px;
-    }
     .note {
       padding: 14px;
       gap: 12px;
@@ -459,30 +323,38 @@ const reel = pic('reel/poster');
     .note__text {
       font-size: 12.5px;
     }
-    .folders {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .hud__ml {
+      display: none;
     }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .grain,
+    .hud__rec {
+      animation: none;
+    }
+  }
 </style>
 
 <script>
-  // Hero: his mark, inflated to chrome over a black-glass body.
-  const host = document.querySelector<HTMLElement>('[data-hero]');
-  const canvas = host?.querySelector('canvas');
-  if (host && canvas) {
-    import('../../scripts/chrome/stage')
-      .then(async ({ ChromeStage }) => {
-        const stage = new ChromeStage(canvas, { fit: 0.6, followWindow: true });
-        await stage.setLayers([
-          { mask: host.dataset.body!, finish: 'onyx', grid: 170, roundness: 0.2, depth: 0.22, soften: 4, glints: false },
-          { mask: host.dataset.logo!, finish: 'chrome', grid: 340, roundness: 0.03, depth: 0.85, soften: 4, lift: 0.03 },
-        ]);
-        host.classList.add('is-live');
-        stage.start();
-        (window as any).__dk = { stage };
-      })
-      .catch((err) => console.warn('[devilkid] 3D unavailable, showing the flat mark.', err));
+  // Viewfinder clock: date, time and a running counter, in Medellín time.
+  const date = document.querySelector<HTMLElement>('[data-hud-date]');
+  const time = document.querySelector<HTMLElement>('[data-hud-time]');
+  const tc = document.querySelector<HTMLElement>('[data-hud-tc]');
+  if (date && time && tc) {
+    const zone = { timeZone: 'America/Bogota' } as const;
+    const fDate = new Intl.DateTimeFormat('en-US', { ...zone, month: 'short', day: 'numeric', year: 'numeric' });
+    const fTime = new Intl.DateTimeFormat('en-US', { ...zone, hour: 'numeric', minute: '2-digit', second: '2-digit' });
+    const start = Date.now();
+    const tick = () => {
+      const now = new Date();
+      date.textContent = fDate.format(now).replace(',', '').toUpperCase();
+      time.textContent = fTime.format(now);
+      const secs = Math.floor((Date.now() - start) / 1000);
+      tc.textContent = `${Math.floor(secs / 3600)}:${String(Math.floor(secs / 60) % 60).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+    };
+    tick();
+    setInterval(tick, 1000);
   }
 
   // Cover footage. The still frame paints first; the player is added once the
