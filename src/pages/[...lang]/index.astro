@@ -27,7 +27,6 @@ const reel = pic('reel/poster');
     <div class="hud" aria-hidden="true">
       <p class="hud__tl"><span class="hud__rec">●</span> REC <span data-hud-tc>0:00:00</span></p>
       <p class="hud__tr"><span class="hud__batt"><i></i></span> 60min</p>
-      <p class="hud__ml"><span class="hud__night">◐</span> NIGHTSHOT</p>
       <p class="hud__bl">
         <span data-hud-date>NOV 25 2026</span><br />
         <span data-hud-time>11:06:00 PM</span>
@@ -174,12 +173,6 @@ const reel = pic('reel/poster');
     align-items: center;
     gap: 10px;
   }
-  .hud__ml {
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    font-size: 0.8em;
-  }
   .hud__bl {
     bottom: 0;
     left: 0;
@@ -188,9 +181,6 @@ const reel = pic('reel/poster');
     color: #ff3b30;
     text-shadow: 0 0 6px rgba(255, 60, 40, 0.7);
     animation: blink 1s steps(1) infinite;
-  }
-  .hud__night {
-    margin-right: 4px;
   }
   .hud__batt {
     position: relative;
@@ -322,9 +312,6 @@ const reel = pic('reel/poster');
     }
     .note__text {
       font-size: 12.5px;
-    }
-    .hud__ml {
-      display: none;
     }
   }
 
