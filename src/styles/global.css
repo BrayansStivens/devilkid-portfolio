@@ -7,6 +7,8 @@
 :root {
   --font-ui: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Verdana, 'DejaVu Sans', sans-serif;
   --font-tech: 'Michroma', 'Eurostile Extended', 'Microgramma D Extended', var(--font-ui);
+  /* The Devil Kid wordmark: Unicode bold Fraktur, as on his old cover. */
+  --font-mark: 'DK Fraktur', 'STIX Two Math', 'Cambria Math', 'Noto Sans Math', serif;
   --font-black: 'Manufacturing Consent', 'Old English Text MT', 'UnifrakturCook', serif;
 
   --desk: #060608;

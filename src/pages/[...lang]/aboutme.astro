@@ -30,7 +30,7 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
           decoding="async"
         />
         <div class="id__copy">
-          <p class="id__mark">{site.name}</p>
+          <p class="id__mark"><span aria-hidden="true">𝕯𝖊𝖛𝖎𝖑 𝕶𝖎𝖉</span><span class="sr-only">{site.name}</span></p>
           <p class="id__name">{site.person}</p>
           <p class="id__roles tech">{s.roles.join(' / ')}</p>
           <p class="id__bio">{bio[lang]}</p>
@@ -177,7 +177,7 @@ const intro = lang === 'es' ? 'Hola Devil Kid, soy {name}.' : "Hi Devil Kid, I'm
   }
   .id__mark {
     margin: -0.08em 0 0;
-    font: 400 clamp(3.2rem, 7vw, 5.6rem) / 0.95 var(--font-black);
+    font: 400 clamp(3rem, 6.4vw, 5.2rem) / 1.05 var(--font-mark);
     color: #0c0c0c;
   }
   .id__name {
