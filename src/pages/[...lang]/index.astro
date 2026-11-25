@@ -45,7 +45,7 @@ const reel = pic('reel/poster');
     </button>
     <h1 class="sr-only">{site.name} — {s.roles.join(', ')}</h1>
     <div class="lockup" aria-hidden="true">
-      <span class="word word--l chrome">
+      <span class="word word--l">
         𝕯𝖊𝖛𝖎𝖑<i class="glint" style="--g:34px;top:4%;left:8%;--d:.2s"></i>
       </span>
       <div
@@ -58,7 +58,7 @@ const reel = pic('reel/poster');
         <span class="devil head__flat"></span>
         <canvas></canvas>
       </div>
-      <span class="word word--r chrome">
+      <span class="word word--r">
         𝕶𝖎𝖉<i class="glint" style="--g:26px;top:10%;right:2%;--d:1.4s"></i>
       </span>
     </div>
@@ -219,27 +219,38 @@ const reel = pic('reel/poster');
   .lockup {
     position: relative;
     z-index: 1;
-    --head: clamp(170px, 38vmin, 400px);
+    --head: clamp(190px, 42vmin, 420px);
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: auto auto;
+    grid-template-areas: 'head head' 'l r';
+    justify-content: center;
     align-items: center;
+    column-gap: 0.26em;
     width: 100%;
+    font-size: 40px;
   }
   .word {
     position: relative;
-    font: 400 clamp(3.8rem, 13vw, 13.5rem) / 1 var(--font-mark);
-    padding-block: 0.08em;
+    font: 400 1em / 1.1 var(--font-mark);
+    margin-top: 4px;
+    color: #eef0f5;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85), 0 0 18px rgba(0, 0, 0, 0.6);
     user-select: none;
   }
   .word--l {
+    grid-area: l;
     justify-self: end;
-    margin-right: -0.04em;
   }
   .word--r {
+    grid-area: r;
     justify-self: start;
-    margin-left: -0.02em;
+  }
+  .word .glint {
+    display: none;
   }
   .head {
+    grid-area: head;
+    justify-self: center;
     position: relative;
     z-index: 2;
     width: var(--head);
@@ -504,25 +515,7 @@ const reel = pic('reel/poster');
   @media (max-width: 760px) {
     .lockup {
       --head: min(64vw, 40vh);
-      grid-template-columns: auto auto;
-      grid-template-areas: 'head head' 'l r';
-      justify-content: center;
-      column-gap: 0.18em;
-      font-size: clamp(2.6rem, 14.5vw, 6rem);
-    }
-    .head {
-      grid-area: head;
-      justify-self: center;
-    }
-    .word {
-      font-size: 1em;
-      margin: -0.06em 0 0;
-    }
-    .word--l {
-      grid-area: l;
-    }
-    .word--r {
-      grid-area: r;
+      font-size: 34px;
     }
     .roles {
       display: grid;
@@ -582,8 +575,8 @@ const reel = pic('reel/poster');
       .then(async ({ ChromeStage }) => {
         const stage = new ChromeStage(canvas, { fit: 0.6, followWindow: true });
         await stage.setLayers([
-          { mask: host.dataset.body!, finish: 'onyx', grid: 170, roundness: 0.2, depth: 0.42, soften: 4, glints: false },
-          { mask: host.dataset.logo!, finish: 'chrome', grid: 340, roundness: 0.036, depth: 1.8, soften: 4, lift: 0.05 },
+          { mask: host.dataset.body!, finish: 'onyx', grid: 170, roundness: 0.2, depth: 0.22, soften: 4, glints: false },
+          { mask: host.dataset.logo!, finish: 'chrome', grid: 340, roundness: 0.03, depth: 0.85, soften: 4, lift: 0.03 },
         ]);
         host.classList.add('is-live');
         stage.start();

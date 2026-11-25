@@ -11,7 +11,7 @@
   --font-mark: 'DK Fraktur', 'STIX Two Math', 'Cambria Math', 'Noto Sans Math', serif;
   --font-black: 'Manufacturing Consent', 'Old English Text MT', 'UnifrakturCook', serif;
 
-  --desk: #060608;
+  --desk: #000;
   --ink: #141414;
   --paper: #ffffff;
   --stripe: #edf3fe;
@@ -121,20 +121,7 @@ textarea {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(120% 75% at 50% -5%, #20222b 0%, #0c0c11 52%, #050507 100%);
-}
-.desk::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--tex-monogram) 0 0 / 240px 240px;
-  opacity: 0.05;
-}
-.desk::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(90% 70% at 50% 40%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  background: #000;
 }
 
 .stack {
